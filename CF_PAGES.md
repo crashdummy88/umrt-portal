@@ -25,7 +25,7 @@ Set these **names** (production + preview as needed). Never commit values.
 ## Google OAuth redirect URI
 
 ```
-https://umrt-portal.pages.dev/api/auth/google/callback
+https://umrt-portal.pages.dev/api/auth/callback/google
 ```
 
 Scopes: `openid email profile`.
