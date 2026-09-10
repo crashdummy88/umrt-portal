@@ -13,7 +13,7 @@ export async function onRequestGet(context) {
     return json({ error: 'GOOGLE_CLIENT_ID not configured' }, 503);
   }
   const origin = originOf(request);
-  const redirectUri = `${origin}/api/auth/google/callback`;
+  const redirectUri = `${origin}/api/auth/callback/google`;
   const state = await randomToken(24);
   const params = new URLSearchParams({
     client_id: clientId,
