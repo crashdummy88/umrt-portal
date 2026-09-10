@@ -3,96 +3,24 @@
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Account · UMRT Portal</title>
-  <meta name="robots" content="noindex,follow">
   <link rel="stylesheet" href="/assets/styles.css">
-  <link rel="icon" href="/assets/brand/favicon-64.png" sizes="64x64">
 </head>
 <body>
   <div class="wrap">
     <header>
-      <a class="brand" href="/"><img src="/assets/brand/umrt-logo.webp" width="140" height="42" alt="United Mobile RV" fetchpriority="high" decoding="async"/></a>
-      <nav>
-        <a href="/book/">Book</a>
-        <a href="/track/">Track</a>
-        <a href="/account/" aria-current="page">Account</a>
-        <a href="/community/">Community</a>
-      </nav>
+      <a class="brand" href="/">United Mobile <span>RV</span></a>
+      <nav><a href="/book/">Book</a><a href="/track/">Track</a><a href="/account/" aria-current="page">Account</a></nav>
     </header>
     <main>
       <h1>Account</h1>
-      <p class="lede">Sign in with Google to manage your portal profile. Prefer Text for receipts and job history.</p>
-
-      <div id="signed-out" class="card" hidden>
-        <p><a class="btn" href="/api/auth/google/start">Sign in with Google</a></p>
-        <p id="fb-wrap" hidden>
-          <a class="btn btn-ghost" href="/api/auth/facebook/start" id="fb-btn">Sign in with Facebook</a>
-        </p>
-        <p class="note">Facebook sign-in appears when configured. Prefer Text · (616) 606-5277</p>
+      <p class="lede">Account sign-in is coming soon. Prefer Text for receipts and job history.</p>
+      <div class="card">
+        <p>Sign-in not enabled yet. Prefer Text for receipts and job history.</p>
+        <p><a class="btn" href="sms:+16166065277">Prefer Text</a>
+        <a class="btn btn-ghost" href="https://umrt-pay.pages.dev/">Payments</a></p>
       </div>
-
-      <div id="signed-in" class="card" hidden>
-        <p id="profile-line"></p>
-        <p>
-          <button type="button" class="btn" id="logout-btn">Log out</button>
-          <a class="btn btn-ghost" href="https://umrt-pay.pages.dev/">Payments</a>
-        </p>
-      </div>
-
-      <div id="loading" class="card">
-        <p class="note">Checking session…</p>
-      </div>
-
-      <p><a class="btn btn-ghost" href="sms:+16166065277">Prefer Text · (616) 606-5277</a></p>
     </main>
-    <footer>United Mobile RV LLC · Portal (noindex)</footer>
+    <footer>United Mobile RV LLC</footer>
   </div>
-  <script defer>
-  (function () {
-    var loading = document.getElementById('loading');
-    var out = document.getElementById('signed-out');
-    var inn = document.getElementById('signed-in');
-    var line = document.getElementById('profile-line');
-    var fbWrap = document.getElementById('fb-wrap');
-
-    function show(el) { el.hidden = false; }
-    function hide(el) { el.hidden = true; }
-
-    fetch('/api/auth/me', { credentials: 'same-origin' })
-      .then(function (r) {
-        if (r.status === 401) return null;
-        if (!r.ok) throw new Error('me failed');
-        return r.json();
-      })
-      .then(function (data) {
-        hide(loading);
-        if (data && data.user) {
-          var u = data.user;
-          var name = u.name || u.email || 'Signed in';
-          line.textContent = name + (u.email && u.name ? ' · ' + u.email : '');
-          show(inn);
-        } else {
-          show(out);
-        }
-      })
-      .catch(function () {
-        hide(loading);
-        show(out);
-      });
-
-    // Probe Facebook — show button only if not 503
-    fetch('/api/auth/facebook/start', { method: 'GET', redirect: 'manual', credentials: 'same-origin' })
-      .then(function (r) {
-        if (r.status === 503) return;
-        if (r.status === 302 || r.status === 0 || r.ok) show(fbWrap);
-      })
-      .catch(function () { /* keep hidden */ });
-
-    document.getElementById('logout-btn').addEventListener('click', function () {
-      fetch('/api/auth/logout', { method: 'POST', credentials: 'same-origin' })
-        .then(function () { location.reload(); })
-        .catch(function () { location.href = '/account/'; });
-    });
-  })();
-  </script>
 </body>
 </html>
