@@ -1,58 +1,41 @@
 # Cloudflare Pages — umrt-portal
 
-Connect Git `crashdummy88/umrt-portal` → **output `/`** · **no build command** (static + Pages Functions).
+Connect Git `crashdummy88/umrt-portal` → Framework None · Build empty · Output `/`.
+Tip: `https://umrt-portal.pages.dev`
+No WP domain attach (HOLD — pages.dev only). Keep `robots.txt` Disallow + meta `noindex,follow`.
 
-**Tip URL:** `https://umrt-portal.pages.dev`  
-**Domain:** HOLD (do not attach custom domain yet).  
-Keep `robots.txt` Disallow + `noindex` on pages.
+## D1
 
-## Google OAuth redirect URI (exact)
-
-```
-https://umrt-portal.pages.dev/api/auth/callback/google
-```
-
-Add the same URI in Google Cloud Console → APIs & Services → Credentials → OAuth 2.0 Client (Web).
+1. Create a D1 database (Dashboard or `wrangler d1 create umrt-portal`).
+2. Bind it to this Pages project as **`DB`** (Settings → Functions → D1 bindings).
+3. Apply migration `migrations/0001_init.sql` (Dashboard SQL editor, or `wrangler d1 execute umrt-portal --file=migrations/0001_init.sql`).
 
 ## Environment variables (Pages → Settings → Environment variables)
 
-Set for **Production** (and Preview if you test previews):
+Set these **names** (production + preview as needed). Never commit values.
 
 | Name | Required | Notes |
-|------|----------|--------|
-| `GOOGLE_CLIENT_ID` | yes (for Google login) | OAuth client ID |
-| `GOOGLE_CLIENT_SECRET` | yes | OAuth client secret — **secret**, never commit |
-| `SESSION_SECRET` | recommended | Random string ≥32 chars (reserved for future signed cookies) |
-| `APP_ORIGIN` | optional | Defaults to request host; set `https://umrt-portal.pages.dev` if behind proxies |
-| `FACEBOOK_APP_ID` | optional | When both FACEBOOK_* set, Account UI enables Meta button copy |
-| `FACEBOOK_APP_SECRET` | optional | Secret — never commit |
+|------|----------|-------|
+| `GOOGLE_CLIENT_ID` | yes | Google OAuth client ID |
+| `GOOGLE_CLIENT_SECRET` | yes | Google OAuth client secret |
+| `SESSION_SECRET` | yes | Long random string for HMAC session ids |
+| `FACEBOOK_APP_ID` | no | If missing, Facebook routes return 503 JSON |
+| `FACEBOOK_APP_SECRET` | no | Pair with APP_ID |
 
-**Never put secrets in the repo.**
+## Google OAuth redirect URI
 
-## D1 database
+```
+https://umrt-portal.pages.dev/api/auth/google/callback
+```
 
-1. Create D1 database (suggested name: `umrt-portal`).
-2. In Pages project → **Settings → Bindings** → add **D1** binding:
-   - **Variable name / binding:** `DB` (exact — code expects `env.DB`)
-   - Database: the D1 you created
-3. Run SQL from `schema/d1.sql` (Console → D1 → Execute, or `wrangler d1 execute`).
+Scopes: `openid email profile`.
+Auth URL: `https://accounts.google.com/o/oauth2/v2/auth`
+Token: `https://oauth2.googleapis.com/token`
+Userinfo: `https://openidconnect.googleapis.com/v1/userinfo`
 
-## Auth routes (Pages Functions)
+Cookie: `umrt_session` — HttpOnly, Secure, SameSite=Lax.
 
-- `GET /api/auth/google/start` — begin Google OAuth
-- `GET /api/auth/callback/google` — OAuth callback → HttpOnly `umrt_session` cookie
-- `GET|POST /api/auth/logout` — clear session
-- `GET /api/me` — `{ authenticated, user, providers }`
+## Sibling tips
 
-Session cookie: **HttpOnly**, `SameSite=Lax`, `Secure` on HTTPS, 30 days.
-
-## Facebook / Meta
-
-Buttons show on `/account/`. Until `FACEBOOK_APP_ID` + `FACEBOOK_APP_SECRET` are set, UI shows **“coming once Meta keys set”** and the button stays disabled.
-
-## Brand / copy constraints
-
-- Tokens: `#1A1A1A` `#C9972C`
-- Phone: `(616) 606-5277` · Prefer Text CTA
-- Starlink **installs only** — never “Certified”
-- Soft portal separate from WordPress; Pay CTA → `umrt-pay.pages.dev`
+- Pay: `umrt-pay.pages.dev`
+- Community: `umrt-community.pages.dev` (linked from `/community/`)
