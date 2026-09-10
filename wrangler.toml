@@ -1,0 +1,11 @@
+# Cloudflare Pages · umrt-portal
+# D1 binding name MUST be DB (see CF_PAGES.md). database_id is set in the dashboard —
+# do not commit secrets; leave placeholder or set via `wrangler pages` / CF UI.
+name = "umrt-portal"
+compatibility_date = "2024-09-01"
+pages_build_output_dir = "."
+
+[[d1_databases]]
+binding = "DB"
+database_name = "umrt-portal"
+# database_id = "REPLACE_IN_CF_DASHBOARD"

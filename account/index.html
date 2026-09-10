@@ -14,14 +14,107 @@
     </header>
     <main>
       <h1>Account</h1>
-      <p class="lede">Soft stub. Cloudflare Access + customer accounts later — not on WordPress.</p>
-      <div class="card">
-        <p>Sign-in not enabled yet. Prefer Text for receipts and job history.</p>
-        <p><a class="btn" href="sms:+16166065277">Prefer Text</a>
-        <a class="btn btn-ghost" href="https://umrt-pay.pages.dev/">Payments</a></p>
+      <p class="lede">Create account / Log in — customer portal for United Mobile RV. Prefer Text anytime: <a href="sms:+16166065277">(616) 606-5277</a>.</p>
+
+      <div id="flash" class="msg" hidden></div>
+
+      <!-- Signed-out: Create account / Log in -->
+      <div id="auth-panel" class="card" hidden>
+        <h2 class="h2">Create account / Log in</h2>
+        <p class="note">Continue with Google for receipts and soft job history. Domain HOLD — tip host only.</p>
+        <div class="auth-stack">
+          <a id="btn-google" class="btn btn-oauth btn-google" href="/api/auth/google/start">Continue with Google</a>
+          <button id="btn-facebook" type="button" class="btn btn-oauth btn-facebook" disabled title="Coming once Meta keys set">Continue with Facebook</button>
+          <p id="fb-note" class="note">Facebook / Meta — coming once Meta keys set.</p>
+        </div>
+        <p style="margin-top:1rem">
+          <a class="btn" href="sms:+16166065277">Prefer Text</a>
+          <a class="btn btn-ghost" href="https://umrt-pay.pages.dev/">Payments</a>
+        </p>
       </div>
+
+      <!-- Signed-in -->
+      <div id="user-panel" class="card" hidden>
+        <h2 class="h2">You’re signed in</h2>
+        <div class="user-row">
+          <img id="user-pic" class="avatar" alt="" width="48" height="48" hidden>
+          <div>
+            <p id="user-name" class="user-name"></p>
+            <p id="user-email" class="note"></p>
+          </div>
+        </div>
+        <p style="margin-top:1rem">
+          <a class="btn btn-ghost" href="/api/auth/logout">Log out</a>
+          <a class="btn" href="sms:+16166065277">Prefer Text</a>
+        </p>
+      </div>
+
+      <p class="note">Starlink installs only — never “Certified.” Soft portal · noindex · domain HOLD.</p>
     </main>
-    <footer>United Mobile RV LLC</footer>
+    <footer>United Mobile RV LLC · (616) 606-5277</footer>
   </div>
+  <script>
+    (function () {
+      var flash = document.getElementById("flash");
+      var params = new URLSearchParams(location.search);
+      function showFlash(text, ok) {
+        flash.hidden = false;
+        flash.textContent = text;
+        flash.className = "msg " + (ok ? "ok" : "err");
+      }
+      if (params.get("ok")) showFlash("Signed in. Welcome.", true);
+      if (params.get("logged_out")) showFlash("Logged out.", true);
+      var err = params.get("err");
+      if (err === "google_not_configured") showFlash("Google sign-in not configured yet in Cloudflare.", false);
+      else if (err === "db_missing") showFlash("D1 binding DB missing — set in Cloudflare Pages.", false);
+      else if (err === "bad_state") showFlash("Sign-in expired. Try again.", false);
+      else if (err) showFlash("Sign-in failed (" + err + "). Prefer Text if needed.", false);
+
+      var authPanel = document.getElementById("auth-panel");
+      var userPanel = document.getElementById("user-panel");
+      var btnFb = document.getElementById("btn-facebook");
+      var fbNote = document.getElementById("fb-note");
+
+      fetch("/api/me", { credentials: "same-origin", headers: { Accept: "application/json" } })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          if (data.providers && data.providers.facebook) {
+            btnFb.disabled = false;
+            btnFb.removeAttribute("title");
+            btnFb.textContent = "Continue with Facebook";
+            fbNote.textContent = "Facebook / Meta sign-in available.";
+            btnFb.onclick = function () {
+              showFlash("Facebook start endpoint not wired yet — Meta keys present but flow TBD.", false);
+            };
+          } else {
+            btnFb.disabled = true;
+            fbNote.textContent = "Facebook / Meta — coming once Meta keys set.";
+          }
+          if (!data.providers || !data.providers.google) {
+            var g = document.getElementById("btn-google");
+            g.classList.add("btn-muted");
+            g.title = "Set GOOGLE_CLIENT_ID + GOOGLE_CLIENT_SECRET in CF";
+          }
+          if (data.authenticated && data.user) {
+            authPanel.hidden = true;
+            userPanel.hidden = false;
+            document.getElementById("user-name").textContent = data.user.name || "Customer";
+            document.getElementById("user-email").textContent = data.user.email || "";
+            if (data.user.picture) {
+              var pic = document.getElementById("user-pic");
+              pic.src = data.user.picture;
+              pic.hidden = false;
+            }
+          } else {
+            authPanel.hidden = false;
+            userPanel.hidden = true;
+          }
+        })
+        .catch(function () {
+          authPanel.hidden = false;
+          showFlash("Could not reach /api/me — Functions may still be deploying.", false);
+        });
+    })();
+  </script>
 </body>
 </html>
