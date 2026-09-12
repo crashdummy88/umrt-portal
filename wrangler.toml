@@ -7,5 +7,5 @@ pages_build_output_dir = "."
 
 [[d1_databases]]
 binding = "DB"
-database_name = "umrt-portal"
-# database_id = "REPLACE_IN_CF_DASHBOARD"
+database_name = "umrt-portal-db"
+database_id = "cad7eb04-167f-4330-b7e4-5e35a52de927"
