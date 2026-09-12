@@ -4,55 +4,92 @@
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Account · UMRT Portal</title>
   <meta name="robots" content="noindex,follow">
+  <meta name="description" content="United Mobile RV customer and community account portal.">
   <link rel="stylesheet" href="/assets/styles.css">
   <link rel="icon" href="/assets/brand/favicon-64.png" sizes="64x64">
 </head>
 <body>
   <div class="wrap">
     <header>
-      <a class="brand" href="/"><img src="/assets/brand/umrt-logo.webp" width="140" height="42" alt="United Mobile RV" fetchpriority="high" decoding="async"/></a>
-      <nav>
+      <a class="brand" href="/" aria-label="United Mobile RV Portal home"><img src="/assets/brand/umrt-logo.webp" width="140" height="42" alt="United Mobile RV" fetchpriority="high" decoding="async"/></a>
+      <nav aria-label="Portal navigation">
         <a href="/book/">Book</a>
         <a href="/track/">Track</a>
         <a href="/account/" aria-current="page">Account</a>
         <a href="/community/">Community</a>
       </nav>
     </header>
+
     <main>
-      <h1>Account</h1>
-      <p class="lede">Sign in with Google for your portal profile. Prefer Text anytime for receipts and job history.</p>
+      <div class="eyebrow">UMRT Portal</div>
+      <h1>Your account</h1>
+      <p class="lede">One account for your United Mobile RV activity, service access and community participation.</p>
 
-      <div id="signed-out" class="card" hidden>
-        <p><a class="btn" href="/api/auth/google/start">Sign in with Google</a></p>
-        <p id="fb-wrap" hidden>
-          <a class="btn btn-ghost" href="/api/auth/facebook/start" id="fb-btn">Sign in with Facebook</a>
-        </p>
-        <p class="note">Facebook appears when configured. Prefer Text · (616) 606-5277</p>
+      <div id="loading" class="card loading-card" aria-live="polite">
+        <div class="spinner" aria-hidden="true"></div>
+        <div><strong>Checking your session</strong><p class="note">Securely checking your portal account…</p></div>
       </div>
 
-      <div id="signed-in" class="card" hidden>
-        <p id="profile-line"></p>
-        <p>
-          <button type="button" class="btn" id="logout-btn">Log out</button>
-          <a class="btn btn-ghost" href="https://umrt-pay.pages.dev/">Payments</a>
-        </p>
-      </div>
+      <section id="signed-out" class="card auth-card" hidden>
+        <span class="badge">Secure sign-in</span>
+        <h2>Welcome to UMRT</h2>
+        <p class="note">Sign in to access your portal profile and connected UMRT services.</p>
+        <div class="auth-stack">
+          <a class="btn btn-google btn-oauth" href="/api/auth/google/start">Continue with Google</a>
+          <p id="fb-wrap" hidden><a class="btn btn-facebook btn-oauth" href="/api/auth/facebook/start" id="fb-btn">Continue with Facebook</a></p>
+        </div>
+        <div class="auth-trust"><span>✓ Secure session</span><span>✓ No password stored by UMRT</span></div>
+      </section>
 
-      <div id="loading" class="card">
-        <p class="note">Checking session…</p>
-      </div>
+      <section id="signed-in" hidden>
+        <div class="account-hero card">
+          <div class="account-avatar" aria-hidden="true">UM</div>
+          <div class="account-main">
+            <span class="badge live">Signed in</span>
+            <h2 id="profile-name">Your UMRT account</h2>
+            <p id="profile-email" class="note"></p>
+          </div>
+          <button type="button" class="btn btn-ghost" id="logout-btn">Log out</button>
+        </div>
 
-      <p><a class="btn btn-ghost" href="sms:+16166065277">Prefer Text · (616) 606-5277</a></p>
-      <p class="note">Starlink installs only — never “Certified.” Portal · noindex · Domain HOLD.</p>
+        <div class="portal-grid">
+          <a class="portal-card" href="/community/">
+            <span class="portal-icon">◆</span><span><strong>Community</strong><small>Join technical discussions, ask questions and follow solutions.</small></span><span class="arrow">→</span>
+          </a>
+          <a class="portal-card" href="/book/">
+            <span class="portal-icon">+</span><span><strong>Book service</strong><small>Start a service request with United Mobile RV.</small></span><span class="arrow">→</span>
+          </a>
+          <a class="portal-card" href="/track/">
+            <span class="portal-icon">↗</span><span><strong>Track service</strong><small>Check the status of an active service request.</small></span><span class="arrow">→</span>
+          </a>
+          <a class="portal-card" href="https://umrt-pay.pages.dev/">
+            <span class="portal-icon">$</span><span><strong>Payments</strong><small>Open the secure UMRT payment portal.</small></span><span class="arrow">→</span>
+          </a>
+        </div>
+
+        <section class="card account-status">
+          <div class="card-title"><div><div class="eyebrow">Account status</div><h3>Everything in one place</h3></div><span class="badge live">Active</span></div>
+          <div class="status-row"><span>Portal account</span><strong class="ok">Active</strong></div>
+          <div class="status-row"><span>Authentication</span><strong class="ok">Secure</strong></div>
+          <div class="status-row"><span>Community access</span><strong class="ok">Available</strong></div>
+        </section>
+      </section>
+
+      <div class="portal-help card">
+        <div><div class="eyebrow">Need help?</div><strong>Prefer Text</strong><p class="note">For an active repair or account issue, contact United Mobile RV directly.</p></div>
+        <a class="btn" href="sms:+16166065277">Text (616) 606-5277</a>
+      </div>
     </main>
-    <footer>United Mobile RV LLC · (616) 606-5277</footer>
+
+    <footer>United Mobile RV LLC · <a href="/">Portal home</a> · <a href="/community/">Community</a></footer>
   </div>
   <script defer>
   (function () {
     var loading = document.getElementById('loading');
     var out = document.getElementById('signed-out');
     var inn = document.getElementById('signed-in');
-    var line = document.getElementById('profile-line');
+    var nameEl = document.getElementById('profile-name');
+    var emailEl = document.getElementById('profile-email');
     var fbWrap = document.getElementById('fb-wrap');
 
     function show(el) { el.hidden = false; }
@@ -68,15 +105,13 @@
         hide(loading);
         if (data && data.user) {
           var u = data.user;
-          var name = u.name || u.email || 'Signed in';
-          line.textContent = name + (u.email && u.name ? ' · ' + u.email : '');
+          nameEl.textContent = u.name || 'UMRT member';
+          emailEl.textContent = u.email || 'Authenticated account';
           show(inn);
         } else {
           show(out);
         }
-        if (data && data.providers && data.providers.facebook) {
-          show(fbWrap);
-        }
+        if (data && data.providers && data.providers.facebook) show(fbWrap);
       })
       .catch(function () {
         hide(loading);
@@ -86,6 +121,8 @@
     var logout = document.getElementById('logout-btn');
     if (logout) {
       logout.addEventListener('click', function () {
+        logout.disabled = true;
+        logout.textContent = 'Logging out…';
         fetch('/api/auth/logout', { method: 'POST', credentials: 'same-origin' })
           .finally(function () { location.reload(); });
       });
