@@ -5,6 +5,16 @@
   <title>Track · UMRT Portal</title>
   <meta name="robots" content="noindex,follow">
   <link rel="stylesheet" href="/assets/styles.css">
+  <style>
+    .job-card{border:1px solid #e2e2e2;border-radius:8px;padding:16px;margin-bottom:12px}
+    .job-status{display:inline-block;font-size:.75em;font-weight:700;text-transform:uppercase;padding:3px 10px;border-radius:999px;background:#F5F5F5;color:#1A1A1A}
+    .job-status.requested{background:#EFE3C0;color:#7A5A00}
+    .job-status.scheduled{background:#CFE8FF;color:#0A4A8A}
+    .job-status.in_progress{background:#D8E8D2;color:#2C6B1F}
+    .job-status.completed{background:#DCF5E0;color:#1B7A34}
+    .job-status.cancelled{background:#F3D6D6;color:#8A1F1F}
+    .muted{color:#666}
+  </style>
 </head>
 <body>
   <div class="wrap">
@@ -14,15 +24,62 @@
     </header>
     <main>
       <h1>Track service</h1>
-      <p class="lede">Live job tracking is coming soon. Prefer Text your name and coach for an update.</p>
-      <div class="card">
-        <label for="ref">Job / name reference</label>
-        <input id="ref" placeholder="Your name or job reference">
-        <p style="margin-top:1rem"><button class="btn" type="button" disabled>Lookup (coming)</button>
-        <a class="btn btn-ghost" href="sms:+16166065277">Prefer Text</a></p>
+      <div id="signed-out" hidden>
+        <p class="lede">Sign in to see your service requests.</p>
+        <a class="btn" href="/account/">Sign in</a>
       </div>
+      <div id="signed-in" hidden>
+        <p class="lede">Jobs tied to your account email.</p>
+        <div id="job-list"></div>
+        <p id="empty-note" class="muted" hidden>No service requests on file yet for this email. <a href="/book/">Request one</a>, or if you've already submitted the form, Prefer Text and we'll confirm.</p>
+      </div>
+      <div id="loading"><p class="muted">Loading…</p></div>
+      <p style="margin-top:2rem"><a class="btn btn-ghost" href="sms:+16166065277">Prefer Text (616) 606-5277</a></p>
     </main>
     <footer>United Mobile RV LLC</footer>
   </div>
+  <script>
+  (function () {
+    function esc(s) { return String(s || '').replace(/[&<>"']/g, function (c) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+    function statusLabel(s) {
+      return { requested: 'Requested', scheduled: 'Scheduled', in_progress: 'In progress', completed: 'Completed', cancelled: 'Cancelled' }[s] || s;
+    }
+    fetch('/api/auth/me', { credentials: 'include' })
+      .then(function (r) { return r.status === 200 ? r.json() : null; })
+      .then(function (meData) {
+        document.getElementById('loading').hidden = true;
+        if (!meData || !meData.user) {
+          document.getElementById('signed-out').hidden = false;
+          return;
+        }
+        document.getElementById('signed-in').hidden = false;
+        return fetch('/api/jobs/mine', { credentials: 'include' })
+          .then(function (r) { return r.json(); })
+          .then(function (data) {
+            var jobs = (data && data.jobs) || [];
+            var list = document.getElementById('job-list');
+            if (!jobs.length) {
+              document.getElementById('empty-note').hidden = false;
+              return;
+            }
+            list.innerHTML = jobs.map(function (j) {
+              var rig = [j.rv_year, j.rv_make, j.rv_model].filter(Boolean).join(' ');
+              var where = [j.city, j.state].filter(Boolean).join(', ');
+              return '<div class="job-card">' +
+                '<span class="job-status ' + esc(j.status) + '">' + esc(statusLabel(j.status)) + '</span>' +
+                '<h3 style="margin:.5rem 0 0">' + (rig ? esc(rig) : 'Service request') + '</h3>' +
+                '<p class="muted" style="margin:.25rem 0">' + esc(j.issue) + '</p>' +
+                (where ? '<p class="muted" style="margin:0;font-size:.85em">' + esc(where) + '</p>' : '') +
+                '<p class="muted" style="margin:.25rem 0 0;font-size:.8em">Submitted ' + esc(String(j.created_at).slice(0, 10)) + '</p>' +
+              '</div>';
+            }).join('');
+          });
+      })
+      .catch(function () {
+        document.getElementById('loading').hidden = true;
+        document.getElementById('signed-out').hidden = false;
+      });
+  })();
+  </script>
 </body>
 </html>
