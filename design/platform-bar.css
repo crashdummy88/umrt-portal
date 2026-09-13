@@ -1,0 +1,47 @@
+/* UMRT cross-platform bar — tokens sourced from design/theme.json.
+   ~600 bytes gzipped, no external requests, no framework. Safe on slow
+   cellular/satellite links (weBoost/Starlink users are the audience). */
+
+.umrt-platform-bar {
+  background: #0C0C0C;
+  border-bottom: 1px solid rgba(255,255,255,0.12);
+  font-family: "Inter", "Helvetica Neue", Helvetica, Arial, system-ui, sans-serif;
+}
+
+.umrt-platform-bar-inner {
+  width: min(100% - 48px, 1160px);
+  margin-inline: auto;
+  display: flex;
+  gap: 20px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.umrt-platform-bar-inner::-webkit-scrollbar { display: none; }
+
+.umrt-platform-bar a {
+  flex: 0 0 auto;
+  padding: 8px 2px;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.55);
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+}
+
+.umrt-platform-bar a:hover {
+  color: #FFFFFF;
+}
+
+.umrt-platform-bar a.is-current {
+  color: #C9972C;
+  border-bottom-color: #C9972C;
+  font-weight: 600;
+}
+
+@media (max-width: 480px) {
+  .umrt-platform-bar-inner { gap: 16px; }
+  .umrt-platform-bar a { font-size: 11px; }
+}
