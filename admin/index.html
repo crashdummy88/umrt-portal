@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Admin · UMRT Portal</title>
+<meta name="robots" content="noindex,nofollow">
+<link rel="stylesheet" href="/assets/styles.css">
+<link rel="icon" href="/assets/brand/favicon-64.png" sizes="64x64">
+<style>
+  .wrap{max-width:1080px}
+  .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:.6rem;margin:1rem 0 1.4rem}
+  .stat{background:#fff;border:1px solid var(--line);border-radius:12px;padding:.85rem .9rem}
+  .stat .n{font-size:1.5rem;font-weight:800;letter-spacing:-.02em;line-height:1.1}
+  .stat .l{font-size:.72rem;color:var(--dg);text-transform:uppercase;letter-spacing:.06em;margin-top:.2rem}
+  .stat.money .n{color:#1B7A34}
+  .stat.owe .n{color:#8A1F1F}
+  .filters{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:1rem}
+  .chip{border:1px solid var(--line);background:#fff;border-radius:999px;padding:.4rem .85rem;font-size:.8rem;font-weight:700;cursor:pointer;color:var(--dg)}
+  .chip.active{background:var(--black);color:#fff;border-color:var(--black)}
+  .job{border:1px solid var(--line);border-radius:14px;padding:1rem 1.1rem;margin-bottom:.8rem;background:#fff}
+  .job-top{display:flex;justify-content:space-between;align-items:flex-start;gap:.75rem;flex-wrap:wrap}
+  .job-status{display:inline-block;font-size:.72em;font-weight:700;text-transform:uppercase;letter-spacing:.03em;padding:3px 10px;border-radius:999px;background:#F5F5F5;color:#1A1A1A}
+  .job-status.requested{background:#EFE3C0;color:#7A5A00}
+  .job-status.scheduled{background:#CFE8FF;color:#0A4A8A}
+  .job-status.in_progress{background:#D8E8D2;color:#2C6B1F}
+  .job-status.completed{background:#DCF5E0;color:#1B7A34}
+  .job-status.cancelled{background:#F3D6D6;color:#8A1F1F}
+  .paid-pill{display:inline-block;font-size:.72em;font-weight:700;padding:3px 10px;border-radius:999px;background:#DCF5E0;color:#1B7A34;margin-left:.35rem}
+  .unpaid-pill{display:inline-block;font-size:.72em;font-weight:700;padding:3px 10px;border-radius:999px;background:#FFF3D6;color:#8A5A00;margin-left:.35rem}
+  .job h3{margin:.4rem 0 .15rem;font-size:1.05rem}
+  .job .meta{color:var(--dg);font-size:.84rem;margin:0 0 .15rem}
+  .job .contact{font-size:.84rem;margin:.15rem 0}
+  .job details{margin-top:.6rem;border-top:1px solid var(--line);padding-top:.6rem}
+  .job summary{cursor:pointer;font-weight:700;font-size:.85rem;color:#8a6816;list-style:none}
+  .job summary::-webkit-details-marker{display:none}
+  .edit-grid{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-top:.7rem}
+  .edit-grid .full{grid-column:1/-1}
+  .edit-grid label{margin:0 0 .25rem}
+  .row-actions{display:flex;gap:.5rem;align-items:center;margin-top:.7rem;flex-wrap:wrap}
+  .save-msg{font-size:.8rem;font-weight:700}
+  .save-msg.ok{color:#1B7A34}
+  .save-msg.err{color:#8A1F1F}
+  @media(max-width:600px){.edit-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <a class="brand" href="/">United Mobile <span>RV</span></a>
+    <nav aria-label="Portal navigation"><a href="/">Home</a><a href="/track/">Track</a><a href="/account/">Account</a></nav>
+  </header>
+  <main>
+    <div class="eyebrow">Owner dashboard</div>
+    <h1>Jobs &amp; revenue</h1>
+    <p class="lede">Every booking that's come through the site, in one place. Update status and record what a job actually paid — this is the real ledger.</p>
+
+    <div id="loading"><p class="muted">Checking access…</p></div>
+
+    <div id="signed-out" hidden>
+      <div class="card">
+        <p><strong>Sign in required.</strong></p>
+        <a class="btn" href="/account/">Sign in</a>
+      </div>
+    </div>
+
+    <div id="no-access" hidden>
+      <div class="card">
+        <p><strong>This account isn't an admin.</strong> Signed in, but not authorized for the dashboard.</p>
+      </div>
+    </div>
+
+    <div id="dashboard" hidden>
+      <div class="stat-grid" id="stats"></div>
+      <div class="filters" id="filters"></div>
+      <div id="job-list"></div>
+      <p id="empty-note" class="muted" hidden>No jobs match this filter.</p>
+    </div>
+  </main>
+  <footer>United Mobile RV LLC · Internal use only</footer>
+</div>
+
+<script>
+(function () {
+  var STATUSES = ['requested', 'scheduled', 'in_progress', 'completed', 'cancelled'];
+  var STATUS_LABEL = { requested: 'Requested', scheduled: 'Scheduled', in_progress: 'In progress', completed: 'Completed', cancelled: 'Cancelled' };
+  var METHODS = ['square', 'cash', 'check', 'other'];
+  var currentFilter = '';
+  var jobsCache = [];
+
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function money(cents) { return '$' + (Number(cents || 0) / 100).toFixed(2); }
+  function fmtDate(s) { return s ? String(s).slice(0, 10) : ''; }
+
+  function renderStats(stats) {
+    if (!stats) { document.getElementById('stats').innerHTML = ''; return; }
+    var cells = [
+      { l: 'Total jobs', n: stats.total || 0 },
+      { l: 'Requested', n: stats.requested || 0 },
+      { l: 'Scheduled', n: stats.scheduled || 0 },
+      { l: 'In progress', n: stats.in_progress || 0 },
+      { l: 'Completed', n: stats.completed || 0 },
+      { l: 'Revenue collected', n: money(stats.revenue_cents), cls: 'money' },
+      { l: 'Outstanding (unpaid)', n: money(stats.outstanding_cents), cls: 'owe' }
+    ];
+    document.getElementById('stats').innerHTML = cells.map(function (c) {
+      return '<div class="stat' + (c.cls ? ' ' + c.cls : '') + '"><div class="n">' + esc(c.n) + '</div><div class="l">' + esc(c.l) + '</div></div>';
+    }).join('');
+  }
+
+  function renderFilters() {
+    var opts = [{ v: '', label: 'All' }].concat(STATUSES.map(function (s) { return { v: s, label: STATUS_LABEL[s] }; }));
+    document.getElementById('filters').innerHTML = opts.map(function (o) {
+      return '<button type="button" class="chip' + (currentFilter === o.v ? ' active' : '') + '" data-filter="' + esc(o.v) + '">' + esc(o.label) + '</button>';
+    }).join('');
+    Array.prototype.forEach.call(document.querySelectorAll('.chip'), function (btn) {
+      btn.addEventListener('click', function () {
+        currentFilter = btn.getAttribute('data-filter');
+        loadJobs();
+      });
+    });
+  }
+
+  function jobEditForm(j) {
+    var statusOpts = STATUSES.map(function (s) {
+      return '<option value="' + s + '"' + (j.status === s ? ' selected' : '') + '>' + STATUS_LABEL[s] + '</option>';
+    }).join('');
+    var methodOpts = '<option value="">—</option>' + METHODS.map(function (m) {
+      return '<option value="' + m + '"' + (j.payment_method === m ? ' selected' : '') + '>' + m.charAt(0).toUpperCase() + m.slice(1) + '</option>';
+    }).join('');
+    var dollars = j.final_amount_cents != null ? (j.final_amount_cents / 100).toFixed(2) : '';
+    return '' +
+      '<div class="edit-grid">' +
+        '<div><label>Status</label><select class="f-status">' + statusOpts + '</select></div>' +
+        '<div><label>Final amount ($)</label><input class="f-amount" type="number" min="0" step="0.01" value="' + esc(dollars) + '" placeholder="0.00"></div>' +
+        '<div><label>Payment method</label><select class="f-method">' + methodOpts + '</select></div>' +
+        '<div><label>Paid?</label><select class="f-paid"><option value="unset">No change</option><option value="true"' + (j.paid_at ? ' selected' : '') + '>Mark paid now</option><option value="false">Mark unpaid</option></select></div>' +
+        '<div class="full"><label>Admin notes (private)</label><input class="f-notes" type="text" value="' + esc(j.admin_notes || '') + '" placeholder="Parts used, follow-up, etc."></div>' +
+      '</div>' +
+      '<div class="row-actions"><button type="button" class="btn save-btn">Save changes</button><span class="save-msg"></span></div>';
+  }
+
+  function attachSave(card, job) {
+    var btn = card.querySelector('.save-btn');
+    var msg = card.querySelector('.save-msg');
+    btn.addEventListener('click', function () {
+      var paidSel = card.querySelector('.f-paid').value;
+      var amountVal = card.querySelector('.f-amount').value;
+      var body = {
+        status: card.querySelector('.f-status').value,
+        payment_method: card.querySelector('.f-method').value || null,
+        admin_notes: card.querySelector('.f-notes').value,
+        final_amount_dollars: amountVal === '' ? null : Number(amountVal)
+      };
+      if (paidSel === 'true') body.mark_paid = true;
+      if (paidSel === 'false') body.mark_paid = false;
+
+      btn.disabled = true; msg.textContent = 'Saving…'; msg.className = 'save-msg';
+      fetch('/api/admin/jobs/' + encodeURIComponent(job.id), {
+        method: 'PATCH', credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      }).then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
+        .then(function (res) {
+          btn.disabled = false;
+          if (!res.ok) { msg.textContent = 'Error: ' + (res.d && res.d.error || 'failed'); msg.className = 'save-msg err'; return; }
+          msg.textContent = 'Saved'; msg.className = 'save-msg ok';
+          loadJobs();
+        })
+        .catch(function () { btn.disabled = false; msg.textContent = 'Network error'; msg.className = 'save-msg err'; });
+    });
+  }
+
+  function renderJobs(jobs) {
+    var list = document.getElementById('job-list');
+    document.getElementById('empty-note').hidden = !!jobs.length;
+    list.innerHTML = '';
+    jobs.forEach(function (j) {
+      var rig = [j.rv_year, j.rv_make, j.rv_model].filter(Boolean).join(' ');
+      var where = [j.city, j.state].filter(Boolean).join(', ');
+      var el = document.createElement('div');
+      el.className = 'job';
+      el.innerHTML = '' +
+        '<div class="job-top">' +
+          '<div>' +
+            '<span class="job-status ' + esc(j.status) + '">' + esc(STATUS_LABEL[j.status] || j.status) + '</span>' +
+            (j.final_amount_cents != null ? (j.paid_at ? '<span class="paid-pill">Paid ' + money(j.final_amount_cents) + '</span>' : '<span class="unpaid-pill">Owes ' + money(j.final_amount_cents) + '</span>') : '') +
+            '<h3>' + esc(j.full_name) + (rig ? ' — ' + esc(rig) : '') + '</h3>' +
+            '<p class="meta">' + esc(j.issue) + '</p>' +
+            '<p class="contact">' + esc(j.phone) + (j.email ? ' · ' + esc(j.email) : '') + (where ? ' · ' + esc(where) : '') + '</p>' +
+            '<p class="meta">Submitted ' + esc(fmtDate(j.created_at)) + (j.source ? ' via ' + esc(j.source) : '') + '</p>' +
+          '</div>' +
+        '</div>' +
+        '<details><summary>Edit / update job ▾</summary>' + jobEditForm(j) + '</details>';
+      list.appendChild(el);
+      attachSave(el, j);
+    });
+  }
+
+  function loadJobs() {
+    renderFilters();
+    var qs = currentFilter ? ('?status=' + encodeURIComponent(currentFilter)) : '';
+    fetch('/api/admin/jobs' + qs, { credentials: 'include' })
+      .then(function (r) { return r.json().then(function (d) { return { status: r.status, d: d }; }); })
+      .then(function (res) {
+        if (res.status === 401) { showNoAccess(); return; }
+        jobsCache = res.d.jobs || [];
+        renderStats(res.d.stats);
+        renderJobs(jobsCache);
+      });
+  }
+
+  function showNoAccess() {
+    document.getElementById('loading').hidden = true;
+    document.getElementById('dashboard').hidden = true;
+    document.getElementById('no-access').hidden = false;
+  }
+
+  fetch('/api/auth/me', { credentials: 'include' })
+    .then(function (r) { return r.status === 200 ? r.json() : null; })
+    .then(function (meData) {
+      document.getElementById('loading').hidden = true;
+      if (!meData || !meData.user) {
+        document.getElementById('signed-out').hidden = false;
+        return;
+      }
+      document.getElementById('dashboard').hidden = false;
+      loadJobs();
+    })
+    .catch(function () {
+      document.getElementById('loading').hidden = true;
+      document.getElementById('signed-out').hidden = false;
+    });
+})();
+</script>
+</body>
+</html>

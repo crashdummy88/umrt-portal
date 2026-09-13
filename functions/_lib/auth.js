@@ -197,3 +197,17 @@ export function originOf(request) {
   const url = new URL(request.url);
   return url.origin;
 }
+
+// Admin gate for the internal /admin dashboard. Configure via the ADMIN_EMAILS
+// secret (comma-separated) in Cloudflare Pages settings; falls back to the
+// shop owner's account so the dashboard works even before that's set.
+const DEFAULT_ADMIN_EMAILS = ['mattc2896@gmail.com'];
+
+export function isAdminUser(user, env) {
+  if (!user || !user.email) return false;
+  const list = (env && env.ADMIN_EMAILS
+    ? env.ADMIN_EMAILS.split(',')
+    : DEFAULT_ADMIN_EMAILS
+  ).map((e) => e.trim().toLowerCase()).filter(Boolean);
+  return list.includes(String(user.email).toLowerCase());
+}
