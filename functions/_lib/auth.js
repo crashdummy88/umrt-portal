@@ -152,7 +152,7 @@ export async function getSessionUser(env, request) {
   };
 }
 
-export async function upsertOAuthUser(db, { email, name, picture, provider, providerSub }) {
+export async function upsertOAuthUser(db, { email, name, picture, provider, providerSub, emailVerified = false }) {
   const existing = await db
     .prepare('SELECT id FROM users WHERE provider = ? AND provider_sub = ?')
     .bind(provider, providerSub)
@@ -166,7 +166,11 @@ export async function upsertOAuthUser(db, { email, name, picture, provider, prov
       .run();
     return existing.id;
   }
-  const byEmail = await db.prepare('SELECT id FROM users WHERE email = ?').bind(email).first();
+  // Linking a new provider to an existing row by email is an account merge,
+  // so it is only allowed when the provider has verified that address.
+  const byEmail = emailVerified
+    ? await db.prepare('SELECT id FROM users WHERE email = ?').bind(email).first()
+    : null;
   if (byEmail) {
     await db
       .prepare(

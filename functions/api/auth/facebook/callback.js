@@ -76,6 +76,9 @@ export async function onRequestGet(context) {
     picture,
     provider: 'facebook',
     providerSub: me.id,
+    // Facebook only returns addresses it has itself verified, so the
+    // existing-account merge by email stays allowed here.
+    emailVerified: true,
   });
   const sessionToken = await createSession(env.DB, userId, env.SESSION_SECRET);
 
