@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tech & Vendor Directory · UMRT Portal</title>
+  <meta name="description" content="RV techs and vendors United Mobile RV works with or refers overflow to.">
+  <link rel="stylesheet" href="/assets/styles.css">
+  <style>
+    .vendor-card{border:1px solid #e2e2e2;border-radius:8px;padding:16px;margin-bottom:12px}
+    .vendor-cat{display:inline-block;font-size:.75em;font-weight:700;text-transform:uppercase;padding:3px 10px;border-radius:999px;background:#F5F5F5;color:#1A1A1A;margin-bottom:6px}
+    .muted{color:#666}
+    .tabs{display:flex;gap:8px;margin-bottom:16px}
+    .tabs a{padding:6px 14px;border:1px solid #e2e2e2;border-radius:999px;text-decoration:none;color:#1A1A1A}
+    .tabs a[aria-current="page"]{background:#1A1A1A;color:#fff;border-color:#1A1A1A}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <a class="brand" href="/">United Mobile <span>RV</span></a>
+      <nav aria-label="Portal navigation"><a href="/">Home</a><a href="/book/">Book</a><a href="/track/">Track</a><a href="/directory/" aria-current="page">Directory</a><a href="https://united-mobile-rv.pages.dev/shop/">Shop</a><a href="/account/">Account</a></nav>
+    </header>
+    <main>
+      <h1>Tech &amp; vendor directory</h1>
+      <p class="lede">RV techs and vendors we work with or refer overflow jobs to. Listed businesses pay a $40/year membership -- <a href="/directory/apply.html">apply to be listed</a>.</p>
+      <div class="tabs">
+        <a href="?category=" id="tab-all">All</a>
+        <a href="?category=tech" id="tab-tech">Techs</a>
+        <a href="?category=vendor" id="tab-vendor">Vendors</a>
+      </div>
+      <div id="list"></div>
+      <p id="empty-note" class="muted" hidden>No listings yet in this category.</p>
+      <p id="loading" class="muted">Loading&hellip;</p>
+    </main>
+    <footer>United Mobile RV LLC</footer>
+  </div>
+  <script>
+    var params = new URLSearchParams(location.search);
+    var category = params.get('category') || '';
+    document.getElementById(category === 'tech' ? 'tab-tech' : category === 'vendor' ? 'tab-vendor' : 'tab-all')
+      .setAttribute('aria-current', 'page');
+
+    function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
+
+    fetch('/api/vendors' + (category ? '?category=' + encodeURIComponent(category) : ''))
+      .then(function(r){ return r.json(); })
+      .then(function(data){
+        document.getElementById('loading').hidden = true;
+        var list = document.getElementById('list');
+        var vendors = data.vendors || [];
+        if (!vendors.length) {
+          document.getElementById('empty-note').hidden = false;
+          return;
+        }
+        list.innerHTML = vendors.map(function(v){
+          return '<div class="vendor-card">' +
+            '<span class="vendor-cat">' + esc(v.category) + '</span>' +
+            '<h3>' + esc(v.business_name) + '</h3>' +
+            (v.trade_focus ? '<p class="muted">' + esc(v.trade_focus) + '</p>' : '') +
+            (v.description ? '<p>' + esc(v.description) + '</p>' : '') +
+            (v.service_area ? '<p class="muted">Serves: ' + esc(v.service_area) + '</p>' : '') +
+            (v.website ? '<p><a href="' + esc(v.website) + '" rel="noopener noreferrer" target="_blank">' + esc(v.website) + '</a></p>' : '') +
+            '</div>';
+        }).join('');
+      })
+      .catch(function(){
+        document.getElementById('loading').textContent = 'Could not load the directory right now.';
+      });
+  </script>
+</body>
+</html>

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Apply to the Directory · UMRT Portal</title>
+  <meta name="robots" content="noindex,follow">
+  <link rel="stylesheet" href="/assets/styles.css">
+  <style>.muted{color:#666} label{display:block;margin-top:12px;font-weight:600} input,select,textarea{width:100%;padding:8px;border:1px solid #ccc;border-radius:6px;font:inherit} textarea{min-height:80px}</style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <a class="brand" href="/">United Mobile <span>RV</span></a>
+      <nav aria-label="Portal navigation"><a href="/">Home</a><a href="/directory/">Directory</a><a href="/account/">Account</a></nav>
+    </header>
+    <main>
+      <h1>Apply to the directory</h1>
+      <p class="lede">$40/year membership. Matt reviews every application by hand before it's approved or billed -- nothing is charged automatically by submitting this form.</p>
+
+      <div id="signed-out" hidden>
+        <p class="muted">Sign in first to apply.</p>
+        <a class="btn" href="/account/">Sign in</a>
+      </div>
+
+      <div id="already-applied" hidden>
+        <p class="muted">You've already applied. Matt will follow up once it's reviewed.</p>
+      </div>
+
+      <form id="apply-form" hidden>
+        <label for="businessName">Business name</label>
+        <input id="businessName" required>
+
+        <label for="category">Category</label>
+        <select id="category" required>
+          <option value="">Choose one</option>
+          <option value="tech">Tech (I do RV repair/install work)</option>
+          <option value="vendor">Vendor (I supply parts/equipment)</option>
+        </select>
+
+        <label for="tradeFocus">Trade focus</label>
+        <input id="tradeFocus" placeholder="e.g. Victron/solar install, lithium battery supplier">
+
+        <label for="description">Description</label>
+        <textarea id="description"></textarea>
+
+        <label for="contactEmail">Contact email</label>
+        <input id="contactEmail" type="email" required>
+
+        <label for="contactPhone">Contact phone</label>
+        <input id="contactPhone" type="tel">
+
+        <label for="website">Website</label>
+        <input id="website" type="url" placeholder="https://">
+
+        <label for="serviceArea">Service area</label>
+        <input id="serviceArea" placeholder="e.g. Michigan, Great Lakes region">
+
+        <p style="margin-top:16px"><button class="btn" type="submit">Submit application</button></p>
+        <p id="status" class="muted" role="status"></p>
+      </form>
+    </main>
+    <footer>United Mobile RV LLC</footer>
+  </div>
+  <script>
+    fetch('/api/auth/me', { credentials: 'same-origin' })
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .then(function(data){
+        if (!data || !data.user) {
+          document.getElementById('signed-out').hidden = false;
+          return;
+        }
+        document.getElementById('contactEmail').value = data.user.email || '';
+        return fetch('/api/vendors/mine', { credentials: 'same-origin' })
+          .then(function(r){ return r.ok ? r.json() : { vendor: null }; })
+          .then(function(res){
+            if (res.vendor) {
+              document.getElementById('already-applied').hidden = false;
+            } else {
+              document.getElementById('apply-form').hidden = false;
+            }
+          });
+      });
+
+    document.getElementById('apply-form').addEventListener('submit', function(e){
+      e.preventDefault();
+      var statusEl = document.getElementById('status');
+      statusEl.textContent = 'Submitting…';
+      fetch('/api/vendors', {
+        method: 'POST', credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          businessName: document.getElementById('businessName').value,
+          category: document.getElementById('category').value,
+          tradeFocus: document.getElementById('tradeFocus').value,
+          description: document.getElementById('description').value,
+          contactEmail: document.getElementById('contactEmail').value,
+          contactPhone: document.getElementById('contactPhone').value,
+          website: document.getElementById('website').value,
+          serviceArea: document.getElementById('serviceArea').value,
+        }),
+      })
+        .then(function(r){ return r.json().then(function(d){ return { ok: r.ok, data: d }; }); })
+        .then(function(res){
+          if (res.ok) {
+            statusEl.textContent = res.data.message || 'Application received.';
+            document.getElementById('apply-form').hidden = true;
+          } else {
+            statusEl.textContent = res.data.message || res.data.error || 'Could not submit. Please try again.';
+          }
+        })
+        .catch(function(){ statusEl.textContent = 'Network error. Please try again.'; });
+    });
+  </script>
+</body>
+</html>
