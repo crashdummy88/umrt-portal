@@ -4,23 +4,40 @@
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Tech & Vendor Directory · UMRT Portal</title>
   <meta name="description" content="RV techs and vendors United Mobile RV works with or refers overflow to.">
+  <meta name="theme-color" content="#1A1A1A">
+  <link rel="stylesheet" href="/design/platform-bar.css">
   <link rel="stylesheet" href="/assets/styles.css">
   <style>
-    .vendor-card{border:1px solid #e2e2e2;border-radius:8px;padding:16px;margin-bottom:12px}
-    .vendor-cat{display:inline-block;font-size:.75em;font-weight:700;text-transform:uppercase;padding:3px 10px;border-radius:999px;background:#F5F5F5;color:#1A1A1A;margin-bottom:6px}
-    .muted{color:#666}
+    .vendor-card{border:1px solid var(--line);border-radius:8px;padding:16px;margin-bottom:12px}
+    .vendor-cat{display:inline-block;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:3px 10px;border-radius:999px;background:var(--warn-bg);color:var(--gold);margin-bottom:6px}
     .tabs{display:flex;gap:8px;margin-bottom:16px}
-    .tabs a{padding:6px 14px;border:1px solid #e2e2e2;border-radius:999px;text-decoration:none;color:#1A1A1A}
-    .tabs a[aria-current="page"]{background:#1A1A1A;color:#fff;border-color:#1A1A1A}
+    .tabs a{padding:6px 14px;border:1px solid var(--line);border-radius:999px;text-decoration:none;color:var(--text)}
+    .tabs a[aria-current="page"]{background:var(--gold);color:var(--black);border-color:var(--gold)}
   </style>
 </head>
 <body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <div class="umrt-platform-bar" role="navigation" aria-label="UMRT properties">
+    <div class="umrt-platform-bar-inner">
+      <a href="https://unitedmobilerv.com/" data-platform-link="hub">Main Hub</a>
+      <a href="https://shop.unitedmobilerv.com/" data-platform-link="shop">Shop</a>
+      <a href="https://forum.unitedmobilerv.com/" data-platform-link="forum">Forum</a>
+      <a href="https://umrt-software.pages.dev/" data-platform-link="software">Software</a>
+      <a href="/" data-platform-link="portal" class="is-current">Portal</a>
+    </div>
+  </div>
   <div class="wrap">
-    <header>
-      <a class="brand" href="/">United Mobile <span>RV</span></a>
-      <nav aria-label="Portal navigation"><a href="/">Home</a><a href="/book/">Book</a><a href="/track/">Track</a><a href="/directory/" aria-current="page">Directory</a><a href="https://united-mobile-rv.pages.dev/shop/">Shop</a><a href="/account/">Account</a></nav>
+    <header class="site-head">
+      <a class="brand" href="/" aria-label="United Mobile RV Portal home"><img src="/assets/brand/umrt-logo.webp" width="120" height="36" alt="United Mobile RV" decoding="async"></a>
+      <nav class="portal-nav" aria-label="Portal navigation">
+        <a href="/">Home</a>
+        <a href="/book/">Book</a>
+        <a href="/track/">Track</a>
+        <a href="/directory/" aria-current="page">Directory</a>
+        <a href="/account/">Account</a>
+      </nav>
     </header>
-    <main>
+    <main id="main">
       <h1>Tech &amp; vendor directory</h1>
       <p class="lede">RV techs and vendors we work with or refer overflow jobs to. Listed businesses pay a $40/year membership -- <a href="/directory/apply.html">apply to be listed</a>.</p>
       <div class="tabs">
@@ -32,7 +49,7 @@
       <p id="empty-note" class="muted" hidden>No listings yet in this category.</p>
       <p id="loading" class="muted">Loading&hellip;</p>
     </main>
-    <footer>United Mobile RV LLC</footer>
+    <footer class="site-foot"><span>United Mobile RV LLC</span><span><a href="/">Portal home</a> · <a href="/account/">Account</a></span></footer>
   </div>
   <script>
     var params = new URLSearchParams(location.search);

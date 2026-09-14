@@ -4,22 +4,24 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Admin · UMRT Portal</title>
 <meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#1A1A1A">
+<link rel="stylesheet" href="/design/platform-bar.css">
 <link rel="stylesheet" href="/assets/styles.css">
 <link rel="icon" href="/assets/brand/favicon-64.png" sizes="64x64">
 <style>
   .wrap{max-width:1080px}
   .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:.6rem;margin:1rem 0 1.4rem}
-  .stat{background:#fff;border:1px solid var(--line);border-radius:12px;padding:.85rem .9rem}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:.85rem .9rem}
   .stat .n{font-size:1.5rem;font-weight:800;letter-spacing:-.02em;line-height:1.1}
   .stat .l{font-size:.72rem;color:var(--dg);text-transform:uppercase;letter-spacing:.06em;margin-top:.2rem}
-  .stat.money .n{color:#1B7A34}
-  .stat.owe .n{color:#8A1F1F}
+  .stat.money .n{color:var(--ok)}
+  .stat.owe .n{color:var(--err)}
   .filters{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:1rem}
-  .chip{border:1px solid var(--line);background:#fff;border-radius:999px;padding:.4rem .85rem;font-size:.8rem;font-weight:700;cursor:pointer;color:var(--dg)}
-  .chip.active{background:var(--black);color:#fff;border-color:var(--black)}
-  .job{border:1px solid var(--line);border-radius:14px;padding:1rem 1.1rem;margin-bottom:.8rem;background:#fff}
+  .chip{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:.4rem .85rem;font-size:.8rem;font-weight:700;cursor:pointer;color:var(--dg)}
+  .chip.active{background:var(--gold);color:var(--black);border-color:var(--gold)}
+  .job{border:1px solid var(--line);border-radius:14px;padding:1rem 1.1rem;margin-bottom:.8rem;background:var(--card)}
   .job-top{display:flex;justify-content:space-between;align-items:flex-start;gap:.75rem;flex-wrap:wrap}
-  .job-status{display:inline-block;font-size:.72em;font-weight:700;text-transform:uppercase;letter-spacing:.03em;padding:3px 10px;border-radius:999px;background:#F5F5F5;color:#1A1A1A}
+  .job-status{display:inline-block;font-size:.72em;font-weight:700;text-transform:uppercase;letter-spacing:.03em;padding:3px 10px;border-radius:999px;background:rgba(255,255,255,.08);color:var(--text)}
   .job-status.requested{background:#EFE3C0;color:#7A5A00}
   .job-status.scheduled{background:#CFE8FF;color:#0A4A8A}
   .job-status.in_progress{background:#D8E8D2;color:#2C6B1F}
@@ -31,25 +33,41 @@
   .job .meta{color:var(--dg);font-size:.84rem;margin:0 0 .15rem}
   .job .contact{font-size:.84rem;margin:.15rem 0}
   .job details{margin-top:.6rem;border-top:1px solid var(--line);padding-top:.6rem}
-  .job summary{cursor:pointer;font-weight:700;font-size:.85rem;color:#8a6816;list-style:none}
+  .job summary{cursor:pointer;font-weight:700;font-size:.85rem;color:var(--gold);list-style:none}
   .job summary::-webkit-details-marker{display:none}
   .edit-grid{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-top:.7rem}
   .edit-grid .full{grid-column:1/-1}
   .edit-grid label{margin:0 0 .25rem}
   .row-actions{display:flex;gap:.5rem;align-items:center;margin-top:.7rem;flex-wrap:wrap}
   .save-msg{font-size:.8rem;font-weight:700}
-  .save-msg.ok{color:#1B7A34}
-  .save-msg.err{color:#8A1F1F}
+  .save-msg.ok{color:var(--ok)}
+  .save-msg.err{color:var(--err)}
   @media(max-width:600px){.edit-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <div class="umrt-platform-bar" role="navigation" aria-label="UMRT properties">
+    <div class="umrt-platform-bar-inner">
+      <a href="https://unitedmobilerv.com/" data-platform-link="hub">Main Hub</a>
+      <a href="https://shop.unitedmobilerv.com/" data-platform-link="shop">Shop</a>
+      <a href="https://forum.unitedmobilerv.com/" data-platform-link="forum">Forum</a>
+      <a href="https://umrt-software.pages.dev/" data-platform-link="software">Software</a>
+      <a href="/" data-platform-link="portal" class="is-current">Portal</a>
+    </div>
+  </div>
 <div class="wrap">
-  <header>
-    <a class="brand" href="/">United Mobile <span>RV</span></a>
-    <nav aria-label="Portal navigation"><a href="/">Home</a><a href="/track/">Track</a><a href="/directory/">Directory</a><a href="/account/">Account</a></nav>
-  </header>
-  <main>
+    <header class="site-head">
+      <a class="brand" href="/" aria-label="United Mobile RV Portal home"><img src="/assets/brand/umrt-logo.webp" width="120" height="36" alt="United Mobile RV" decoding="async"></a>
+      <nav class="portal-nav" aria-label="Portal navigation">
+        <a href="/">Home</a>
+        <a href="/book/">Book</a>
+        <a href="/track/">Track</a>
+        <a href="/directory/">Directory</a>
+        <a href="/account/">Account</a>
+      </nav>
+    </header>
+  <main id="main">
     <div class="eyebrow">Owner dashboard</div>
     <h1>Jobs &amp; revenue</h1>
     <p class="lede">Every booking that's come through the site, in one place. Update status and record what a job actually paid — this is the real ledger.</p>
@@ -76,7 +94,7 @@
       <p id="empty-note" class="muted" hidden>No jobs match this filter.</p>
     </div>
   </main>
-  <footer>United Mobile RV LLC · Internal use only</footer>
+  <footer class="site-foot"><span>United Mobile RV LLC · Internal use only</span><span><a href="/">Portal home</a></span></footer>
 </div>
 
 <script>

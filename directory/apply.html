@@ -4,16 +4,34 @@
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Apply to the Directory · UMRT Portal</title>
   <meta name="robots" content="noindex,follow">
+  <meta name="theme-color" content="#1A1A1A">
+  <link rel="stylesheet" href="/design/platform-bar.css">
   <link rel="stylesheet" href="/assets/styles.css">
-  <style>.muted{color:#666} label{display:block;margin-top:12px;font-weight:600} input,select,textarea{width:100%;padding:8px;border:1px solid #ccc;border-radius:6px;font:inherit} textarea{min-height:80px}</style>
+  <style> label{display:block;margin-top:12px;font-weight:600} input,select,textarea{width:100%;padding:8px;border:1px solid var(--line-strong);border-radius:6px;font:inherit;background:var(--card-alt);color:var(--white)} textarea{min-height:80px}</style>
 </head>
 <body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <div class="umrt-platform-bar" role="navigation" aria-label="UMRT properties">
+    <div class="umrt-platform-bar-inner">
+      <a href="https://unitedmobilerv.com/" data-platform-link="hub">Main Hub</a>
+      <a href="https://shop.unitedmobilerv.com/" data-platform-link="shop">Shop</a>
+      <a href="https://forum.unitedmobilerv.com/" data-platform-link="forum">Forum</a>
+      <a href="https://umrt-software.pages.dev/" data-platform-link="software">Software</a>
+      <a href="/" data-platform-link="portal" class="is-current">Portal</a>
+    </div>
+  </div>
   <div class="wrap">
-    <header>
-      <a class="brand" href="/">United Mobile <span>RV</span></a>
-      <nav aria-label="Portal navigation"><a href="/">Home</a><a href="/directory/">Directory</a><a href="/account/">Account</a></nav>
+    <header class="site-head">
+      <a class="brand" href="/" aria-label="United Mobile RV Portal home"><img src="/assets/brand/umrt-logo.webp" width="120" height="36" alt="United Mobile RV" decoding="async"></a>
+      <nav class="portal-nav" aria-label="Portal navigation">
+        <a href="/">Home</a>
+        <a href="/book/">Book</a>
+        <a href="/track/">Track</a>
+        <a href="/directory/" aria-current="page">Directory</a>
+        <a href="/account/">Account</a>
+      </nav>
     </header>
-    <main>
+    <main id="main">
       <h1>Apply to the directory</h1>
       <p class="lede">$40/year membership. Matt reviews every application by hand before it's approved or billed -- nothing is charged automatically by submitting this form.</p>
 
@@ -59,7 +77,7 @@
         <p id="status" class="muted" role="status"></p>
       </form>
     </main>
-    <footer>United Mobile RV LLC</footer>
+    <footer class="site-foot"><span>United Mobile RV LLC</span><span><a href="/">Portal home</a> · <a href="/account/">Account</a></span></footer>
   </div>
   <script>
     fetch('/api/auth/me', { credentials: 'same-origin' })

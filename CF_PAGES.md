@@ -8,7 +8,7 @@ No WP domain attach (HOLD — pages.dev only). Keep `robots.txt` Disallow + meta
 
 1. Create a D1 database (Dashboard or `wrangler d1 create umrt-portal`).
 2. Bind it to this Pages project as **`DB`** (Settings → Functions → D1 bindings).
-3. Apply migration `migrations/0001_init.sql` (Dashboard SQL editor, or `wrangler d1 execute umrt-portal --file=migrations/0001_init.sql`).
+3. Apply every file in `migrations/` in order (Dashboard SQL editor, or `wrangler d1 execute umrt-portal --file=migrations/000N_….sql`). The same database is bound as `PORTAL_DB` in the `united-mobile-rv` project so `/api/book` can write jobs into it.
 
 ## Environment variables (Pages → Settings → Environment variables)
 
@@ -35,7 +35,12 @@ Userinfo: `https://openidconnect.googleapis.com/v1/userinfo`
 
 Cookie: `umrt_session` — HttpOnly, Secure, SameSite=Lax.
 
+## Turnstile
+
+`/book/` renders the shared Turnstile widget (site key in `book/index.html`). The widget's allowed-domain list in the Cloudflare dashboard must include `umrt-portal.pages.dev` (and `portal.unitedmobilerv.com` once attached); otherwise the form falls back to the unitedmobilerv.com form and Prefer Text.
+
 ## Sibling tips
 
-- Pay: `umrt-pay.pages.dev`
-- Community: `umrt-community.pages.dev` (linked from `/community/`)
+- Pay: `umrt-pay.pages.dev/pay/` (Square link)
+- Forum / community: `forum.unitedmobilerv.com` (`/community/` here redirects to it; `umrt-community` is retired)
+- Status: `umrt-status.pages.dev`, Software: `umrt-software.pages.dev`

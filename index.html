@@ -4,66 +4,157 @@
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Customer portal · United Mobile RV</title>
   <meta name="robots" content="noindex,follow">
-  <meta name="description" content="Book, track, pay, and shop with United Mobile RV — one account for your service and community access.">
+  <meta name="description" content="Book, track and pay for United Mobile RV service — one Google sign-in connects your requests, invoices and forum account.">
+  <meta name="theme-color" content="#1A1A1A">
+  <link rel="stylesheet" href="/design/platform-bar.css">
   <link rel="stylesheet" href="/assets/styles.css">
   <link rel="icon" href="/assets/brand/favicon-64.png" sizes="64x64">
-<link rel="stylesheet" href="/design/platform-bar.css">
 </head>
 <body>
+  <a class="skip-link" href="#main">Skip to content</a>
   <div class="umrt-platform-bar" role="navigation" aria-label="UMRT properties">
     <div class="umrt-platform-bar-inner">
       <a href="https://unitedmobilerv.com/" data-platform-link="hub">Main Hub</a>
       <a href="https://shop.unitedmobilerv.com/" data-platform-link="shop">Shop</a>
       <a href="https://forum.unitedmobilerv.com/" data-platform-link="forum">Forum</a>
       <a href="https://umrt-software.pages.dev/" data-platform-link="software">Software</a>
+      <a href="/" data-platform-link="portal" class="is-current">Portal</a>
     </div>
   </div>
 
   <div class="wrap">
-    <header>
-      <a class="brand" href="/" aria-label="United Mobile RV Portal home"><img src="/assets/brand/umrt-logo.webp" width="140" height="42" alt="United Mobile RV" fetchpriority="high" decoding="async"/></a>
-      <nav aria-label="Portal navigation">
+    <header class="site-head">
+      <a class="brand" href="/" aria-label="United Mobile RV Portal home"><img src="/assets/brand/umrt-logo.webp" width="120" height="36" alt="United Mobile RV" fetchpriority="high" decoding="async"></a>
+      <nav class="portal-nav" aria-label="Portal navigation">
         <a href="/" aria-current="page">Home</a>
         <a href="/book/">Book</a>
         <a href="/track/">Track</a>
         <a href="/directory/">Directory</a>
-        <a href="https://united-mobile-rv.pages.dev/shop/">Shop</a>
         <a href="/account/">Account</a>
-        <a href="/community/">Community</a>
       </nav>
     </header>
-    <main>
-      <div class="eyebrow">UMRT Portal</div>
-      <h1>Everything in one place</h1>
-      <p class="lede">Book a visit, track a job, pay an invoice, shop gear, or join the community — sign in once and it's all connected to your account. Prefer Text still works today while account features roll out.</p>
 
-      <div class="portal-grid">
-        <a class="portal-card" href="/book/">
-          <span class="portal-icon">+</span><span><strong>Book service</strong><small>Request a visit with United Mobile RV.</small></span><span class="arrow">→</span>
-        </a>
-        <a class="portal-card" href="/track/">
-          <span class="portal-icon">↗</span><span><strong>Track service</strong><small>Check the status of an active request.</small></span><span class="arrow">→</span>
-        </a>
-        <a class="portal-card" href="https://united-mobile-rv.pages.dev/shop/">
-          <span class="portal-icon">◇</span><span><strong>Shop</strong><small>Gear, parts, and accessories — Victron, connectivity, and more.</small></span><span class="arrow">→</span>
-        </a>
-        <a class="portal-card" href="https://umrt-pay.pages.dev/pay/">
-          <span class="portal-icon">$</span><span><strong>Pay</strong><small>Pay an invoice or deposit securely.</small></span><span class="arrow">→</span>
-        </a>
-        <a class="portal-card" href="/community/">
-          <span class="portal-icon">◆</span><span><strong>Community</strong><small>Ask questions and follow technical discussions.</small></span><span class="arrow">→</span>
-        </a>
-        <a class="portal-card" href="/account/">
-          <span class="portal-icon">◈</span><span><strong>Account</strong><small>Sign in with Google to manage everything here.</small></span><span class="arrow">→</span>
-        </a>
+    <main id="main">
+      <!-- Signed-out: explain what the account is for, one primary action. -->
+      <section id="signed-out" hidden>
+        <div class="eyebrow">UMRT Portal</div>
+        <h1>Your service, in one place.</h1>
+        <p class="lede">Book a visit, watch its status, and pay the invoice when it arrives. One Google sign-in ties every request made with your email to this account. No password to remember.</p>
+        <div class="btn-row">
+          <a class="btn" href="/api/auth/google/start">Continue with Google</a>
+          <a class="btn btn-ghost" href="/book/">Book without an account</a>
+        </div>
+        <p class="footnote" style="margin-top:.75rem">Prefer Text still works for everything: <a href="sms:+16166065277">(616) 606-5277</a>.</p>
+
+        <div class="band">
+          <div class="eyebrow">What the account does</div>
+          <div class="portal-grid">
+            <a class="portal-card" href="/book/"><span class="portal-icon">+</span><span><strong>Book</strong><small>Request a visit. Signed in, it is filed under your email automatically.</small></span><span class="arrow">→</span></a>
+            <a class="portal-card" href="/track/"><span class="portal-icon">↗</span><span><strong>Track</strong><small>Requested, scheduled, in progress, completed. Real status from the job ledger.</small></span><span class="arrow">→</span></a>
+            <a class="portal-card" href="/track/"><span class="portal-icon">$</span><span><strong>Pay</strong><small>When Matt sends a Square invoice for a job, the pay link shows up on that job.</small></span><span class="arrow">→</span></a>
+          </div>
+        </div>
+      </section>
+
+      <!-- Signed-in: greeting, latest request, then quick actions. -->
+      <section id="signed-in" hidden>
+        <div class="eyebrow">UMRT Portal</div>
+        <h1 id="greeting">Welcome back.</h1>
+        <p class="lede" id="greeting-sub">Here is where your service stands.</p>
+
+        <div class="card" id="latest-job-card">
+          <div class="card-title"><div><div class="eyebrow">Latest request</div><h2 id="latest-title">Checking…</h2></div><span id="latest-status" class="job-status" hidden></span></div>
+          <p class="meta note" id="latest-meta"></p>
+          <div class="btn-row" id="latest-actions">
+            <a class="btn btn-ghost" href="/track/">All requests</a>
+            <a class="btn" href="/book/">Book another visit</a>
+          </div>
+        </div>
+      </section>
+
+      <div id="loading" class="card loading-card" aria-live="polite">
+        <div class="spinner" aria-hidden="true"></div>
+        <div><strong>Checking your session</strong><p class="note">One moment…</p></div>
+      </div>
+
+      <div class="band">
+        <div class="eyebrow">Everything UMRT</div>
+        <div class="portal-grid">
+          <a class="portal-card" href="/book/"><span class="portal-icon">+</span><span><strong>Book service</strong><small>Mobile diagnostic and repair at your site.</small></span><span class="arrow">→</span></a>
+          <a class="portal-card" href="/track/"><span class="portal-icon">↗</span><span><strong>Track service</strong><small>Status and invoices for your requests.</small></span><span class="arrow">→</span></a>
+          <a class="portal-card" href="https://forum.unitedmobilerv.com/"><span class="portal-icon">◆</span><span><strong>Forum<span class="ext">forum.unitedmobilerv.com</span></strong><small>Ask questions, read solved threads, verified-customer badge.</small></span><span class="arrow">→</span></a>
+          <a class="portal-card" href="https://shop.unitedmobilerv.com/"><span class="portal-icon">◇</span><span><strong>Shop<span class="ext">shop.unitedmobilerv.com</span></strong><small>Victron, connectivity and power gear, quoted by Matt.</small></span><span class="arrow">→</span></a>
+          <a class="portal-card" href="https://umrt-pay.pages.dev/pay/"><span class="portal-icon">$</span><span><strong>Pay a deposit<span class="ext">Square</span></strong><small>Secure Square checkout for deposits and first-hour holds.</small></span><span class="arrow">→</span></a>
+          <a class="portal-card" href="https://umrt-software.pages.dev/"><span class="portal-icon">⌘</span><span><strong>Software &amp; apps<span class="ext">umrt-software</span></strong><small>Firmware, apps and links for the gear we install.</small></span><span class="arrow">→</span></a>
+          <a class="portal-card" href="https://umrt-status.pages.dev/"><span class="portal-icon">●</span><span><strong>Route &amp; status<span class="ext">umrt-status</span></strong><small>Where Matt is this week and current hours.</small></span><span class="arrow">→</span></a>
+          <a class="portal-card" href="/directory/"><span class="portal-icon">≡</span><span><strong>Tech &amp; vendor directory</strong><small>Techs and vendors we work with or refer overflow to.</small></span><span class="arrow">→</span></a>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="eyebrow">Field status</div>
+        <div class="field-status" id="field-status" hidden></div>
+        <p class="note" id="field-status-fallback">Live corridor and hours load from the hub. See <a href="https://umrt-status.pages.dev/">umrt-status</a> if this stays blank.</p>
       </div>
 
       <div class="portal-help card">
-        <div><div class="eyebrow">Need help?</div><strong>Prefer Text</strong><p class="note">For an active repair or account issue, contact United Mobile RV directly.</p></div>
+        <div><div class="eyebrow">Need a human?</div><strong>Prefer Text</strong><p class="note">Active repair, account question, anything. Matt answers.</p></div>
         <a class="btn" href="sms:+16166065277">Text (616) 606-5277</a>
       </div>
     </main>
-    <footer>United Mobile RV LLC · <a href="/account/">Account</a> · <a href="/community/">Community</a></footer>
+
+    <footer class="site-foot">
+      <span>United Mobile RV LLC</span>
+      <span><a href="https://unitedmobilerv.com/privacy-policy/">Privacy</a> · <a href="https://unitedmobilerv.com/">unitedmobilerv.com</a> · <a href="/account/">Account</a></span>
+    </footer>
   </div>
+
+  <script src="/assets/portal.js"></script>
+  <script>
+  (function () {
+    var P = window.UMRTPortal, esc = P.esc;
+    var loading = document.getElementById('loading');
+    var out = document.getElementById('signed-out');
+    var inn = document.getElementById('signed-in');
+    var labels = { requested: 'Requested', scheduled: 'Scheduled', in_progress: 'In progress', completed: 'Completed', cancelled: 'Cancelled' };
+
+    P.status.then(function (d) { if (d) document.getElementById('field-status-fallback').hidden = true; });
+
+    P.me.then(function (u) {
+      loading.hidden = true;
+      if (!u) { out.hidden = false; return; }
+      inn.hidden = false;
+      var first = P.firstName(u);
+      document.getElementById('greeting').textContent = first ? 'Welcome back, ' + first + '.' : 'Welcome back.';
+      return fetch('/api/jobs/mine', { credentials: 'same-origin' })
+        .then(function (r) { return r.ok ? r.json() : { jobs: [] }; })
+        .then(function (data) {
+          var jobs = (data && data.jobs) || [];
+          var title = document.getElementById('latest-title');
+          var meta = document.getElementById('latest-meta');
+          var pill = document.getElementById('latest-status');
+          if (!jobs.length) {
+            title.textContent = 'No service requests on file for ' + (u.email || 'this account') + ' yet.';
+            meta.textContent = 'Book a visit here and it shows up on this page and under Track as soon as it is filed.';
+            return;
+          }
+          var j = jobs[0];
+          var rig = [j.rv_year, j.rv_make, j.rv_model].filter(Boolean).join(' ');
+          title.textContent = rig || 'Service request';
+          pill.textContent = labels[j.status] || j.status;
+          pill.className = 'job-status ' + esc(j.status);
+          pill.hidden = false;
+          meta.innerHTML = esc(j.issue || '') + '<br>Submitted ' + esc(String(j.created_at || '').slice(0, 10)) +
+            ([j.city, j.state].filter(Boolean).length ? ' · ' + esc([j.city, j.state].filter(Boolean).join(', ')) : '');
+          if (j.square_invoice_url && !j.paid_at) {
+            var a = document.createElement('a');
+            a.className = 'btn'; a.href = j.square_invoice_url; a.rel = 'noopener'; a.textContent = 'Pay invoice';
+            document.getElementById('latest-actions').prepend(a);
+          }
+          document.getElementById('greeting-sub').textContent = jobs.length === 1 ? 'You have one service request on file.' : 'You have ' + jobs.length + ' service requests on file.';
+        });
+    }).catch(function () { loading.hidden = true; out.hidden = false; });
+  })();
+  </script>
 </body>
 </html>

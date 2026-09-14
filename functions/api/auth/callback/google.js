@@ -69,7 +69,11 @@ export async function onRequestGet(context) {
     });
   }
   const info = await infoRes.json();
-  if (!info.email || !info.sub) {
+  // Google only vouches for the address when email_verified is true. Without
+  // this check an unverified Google account claiming an existing customer's
+  // (or the admin's) email would be merged into that account by
+  // upsertOAuthUser's email fallback.
+  if (!info.email || !info.sub || info.email_verified !== true) {
     return new Response(null, {
       status: 302,
       headers: { Location: `${origin}/account/?error=email`, 'Set-Cookie': clearState },
@@ -82,6 +86,7 @@ export async function onRequestGet(context) {
     picture: info.picture || null,
     provider: 'google',
     providerSub: info.sub,
+    emailVerified: true,
   });
   const sessionToken = await createSession(env.DB, userId, secret);
 
