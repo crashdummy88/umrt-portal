@@ -5,7 +5,7 @@
  *
  * `umrt_sso` is stateless (no DB), Domain=.unitedmobilerv.com, and is set
  * ADDITIONALLY alongside the native session cookie on Google login, so that
- * forum.*/docs.* recognize a user who logged in here, and vice versa.
+ * forum and docs recognize a user who logged in here, and vice versa.
  * Signed with SSO_SHARED_SECRET (NOT the same secret as SESSION_SECRET --
  * deliberately separate so rotating one never invalidates the other).
  *
