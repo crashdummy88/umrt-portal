@@ -2,32 +2,186 @@
 <html lang="en">
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Book · UMRT Portal</title>
+  <title>Book a visit · UMRT Portal</title>
   <meta name="robots" content="noindex,follow">
+  <meta name="theme-color" content="#1A1A1A">
+  <link rel="stylesheet" href="/design/platform-bar.css">
   <link rel="stylesheet" href="/assets/styles.css">
+  <link rel="icon" href="/assets/brand/favicon-64.png" sizes="64x64">
 </head>
 <body>
-  <div class="wrap">
-    <header>
-      <a class="brand" href="/">United Mobile <span>RV</span></a>
-      <nav aria-label="Portal navigation"><a href="/">Home</a><a href="/book/" aria-current="page">Book</a><a href="/track/">Track</a><a href="/directory/">Directory</a><a href="https://united-mobile-rv.pages.dev/shop/">Shop</a><a href="/account/">Account</a><a href="/community/">Community</a></nav>
-    </header>
-    <main>
-      <h1>Book a visit</h1>
-      <p class="lede">Labor 1hr min / 30-min increments; winterize $175 · trip-prep $225 when relevant.</p>
-      <div class="card">
-        <h2>Fastest path</h2>
-        <p>The live booking form is on the main site — fill it out there and it's tied to your account automatically if you sign in with the same email.</p>
-        <p style="margin-top:1rem"><a class="btn" href="https://unitedmobilerv.com/book-service/">Book service on unitedmobilerv.com</a></p>
-      </div>
-      <div class="card">
-        <h2>Or just text it in</h2>
-        <p>Prefer Text with your city/ZIP, rig, and what's failing — usually the quickest way to get a real number.</p>
-        <p style="margin-top:1rem"><a class="btn btn-ghost" href="sms:+16166065277">Prefer Text (616) 606-5277</a></p>
-      </div>
-      <p class="muted" style="margin-top:1.5rem">Already booked? <a href="/track/">Track your service</a> here once it's on file.</p>
-    </main>
-    <footer>United Mobile RV LLC</footer>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <div class="umrt-platform-bar" role="navigation" aria-label="UMRT properties">
+    <div class="umrt-platform-bar-inner">
+      <a href="https://unitedmobilerv.com/" data-platform-link="hub">Main Hub</a>
+      <a href="https://shop.unitedmobilerv.com/" data-platform-link="shop">Shop</a>
+      <a href="https://forum.unitedmobilerv.com/" data-platform-link="forum">Forum</a>
+      <a href="https://umrt-software.pages.dev/" data-platform-link="software">Software</a>
+      <a href="/" data-platform-link="portal" class="is-current">Portal</a>
+    </div>
   </div>
+
+  <div class="wrap">
+    <header class="site-head">
+      <a class="brand" href="/" aria-label="United Mobile RV Portal home"><img src="/assets/brand/umrt-logo.webp" width="120" height="36" alt="United Mobile RV" decoding="async"></a>
+      <nav class="portal-nav" aria-label="Portal navigation">
+        <a href="/">Home</a>
+        <a href="/book/" aria-current="page">Book</a>
+        <a href="/track/">Track</a>
+        <a href="/directory/">Directory</a>
+        <a href="/account/">Account</a>
+      </nav>
+    </header>
+
+    <main id="main">
+      <div class="eyebrow">Book</div>
+      <h1>Book a mobile RV repair visit</h1>
+      <p class="lede">Same request form as unitedmobilerv.com, filed straight into the job ledger. Trip $75 within 30 mi then $1.50/mi each way, labor ~$150/hr with a 1 hr minimum, $150 diagnostic applied if you proceed.</p>
+
+      <p class="note" id="signed-in-note" hidden>Signed in as <strong id="who"></strong> — this request will appear under <a href="/track/">Track</a> automatically.</p>
+      <p class="note" id="signed-out-note" hidden><a href="/api/auth/google/start">Sign in with Google</a> first if you want to track this request here. Otherwise just send it; Matt replies by text either way.</p>
+
+      <form id="book-form" class="form-grid" novalidate>
+        <div>
+          <label for="name">Name <span class="req">*</span></label>
+          <input id="name" name="name" required autocomplete="name" placeholder="Your name">
+        </div>
+        <div>
+          <label for="phone">Phone <span class="req">*</span></label>
+          <input id="phone" name="phone" type="tel" required autocomplete="tel" placeholder="Best number for text/call">
+        </div>
+        <div>
+          <label for="email">Email <span class="req">*</span></label>
+          <input id="email" name="email" type="email" required autocomplete="email" placeholder="you@email.com">
+        </div>
+        <div>
+          <label for="location">Location <span class="req">*</span></label>
+          <input id="location" name="location" required autocomplete="postal-code" placeholder="City / ZIP (e.g. Billings 59101)">
+        </div>
+        <div>
+          <label for="rig">Rig <span class="req">*</span></label>
+          <input id="rig" name="rig" required placeholder="Year / make / model (or van/trailer type)">
+        </div>
+        <div>
+          <label for="prefer">Prefer <span class="req">*</span></label>
+          <select id="prefer" name="prefer" required>
+            <option value="Text" selected>Text</option>
+            <option value="Call">Call</option>
+            <option value="Email">Email</option>
+          </select>
+        </div>
+        <div class="full">
+          <label for="issue">What is going on <span class="req">*</span></label>
+          <textarea id="issue" name="issue" required placeholder="Symptoms, error codes, when it started..."></textarea>
+        </div>
+        <div>
+          <label for="when">Preferred timing</label>
+          <input id="when" name="when" placeholder="This week, weekend, flexible...">
+        </div>
+        <div>
+          <label for="found">How did you find us?</label>
+          <input id="found" name="how_found" placeholder="Google, referral, campground, forum...">
+        </div>
+        <div class="hp-field" aria-hidden="true"><label for="website">Website</label><input id="website" name="website" type="text" tabindex="-1" autocomplete="off"></div>
+        <div class="full btn-row">
+          <button class="btn" type="submit" id="submit-btn">Send request</button>
+          <a class="btn btn-ghost" href="sms:+16166065277">Prefer Text (616) 606-5277</a>
+        </div>
+        <div class="full msg" id="form-status" role="status" aria-live="polite"></div>
+        <div class="full" id="book-turnstile"></div>
+      </form>
+
+      <div class="card" id="fallback" hidden>
+        <h2>Form not going through?</h2>
+        <p class="note">Use the form on the main site, or text the same details. Both land in the same place.</p>
+        <div class="btn-row"><a class="btn btn-ghost" href="https://unitedmobilerv.com/book-service/">Book on unitedmobilerv.com</a><a class="btn" href="sms:+16166065277">Text (616) 606-5277</a></div>
+      </div>
+    </main>
+
+    <footer class="site-foot">
+      <span>United Mobile RV LLC</span>
+      <span><a href="/track/">Track a request</a> · <a href="/account/">Account</a></span>
+    </footer>
+  </div>
+
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+  <script src="/assets/portal.js"></script>
+  <script>
+  (function () {
+    // Posts to the hub's booking function: one endpoint, one email, one job
+    // ledger for the WP form, the hub form and this one. The hub allows this
+    // origin in functions/api/book.js ALLOWED_ORIGINS.
+    var BOOK_API = 'https://united-mobile-rv.pages.dev/api/book';
+    var SITEKEY = '0x4AAAAAAEvvXidVbXxlagxj';
+    var form = document.getElementById('book-form');
+    var status = document.getElementById('form-status');
+    var btn = document.getElementById('submit-btn');
+    var widgetId = null;
+
+    window.UMRTPortal.me.then(function (u) {
+      if (u) {
+        document.getElementById('who').textContent = u.email || u.name || '';
+        document.getElementById('signed-in-note').hidden = false;
+        var email = document.getElementById('email');
+        if (u.email) { email.value = u.email; email.readOnly = true; }
+        if (u.name && !document.getElementById('name').value) document.getElementById('name').value = u.name;
+      } else {
+        document.getElementById('signed-out-note').hidden = false;
+      }
+    });
+
+    function turnstileToken() {
+      return new Promise(function (resolve) {
+        var el = document.getElementById('book-turnstile');
+        if (!window.turnstile || !el) { resolve(''); return; }
+        var done = false;
+        function finish(t) { if (!done) { done = true; resolve(t || ''); } }
+        if (widgetId == null) {
+          widgetId = window.turnstile.render(el, {
+            sitekey: SITEKEY, size: 'normal', appearance: 'interaction-only', execution: 'execute',
+            callback: finish, 'error-callback': function () { finish(''); }, 'timeout-callback': function () { finish(''); }
+          });
+        } else {
+          window.turnstile.reset(widgetId);
+        }
+        window.turnstile.execute(widgetId);
+        setTimeout(function () { finish(''); }, 6000);
+      });
+    }
+
+    function fail(text) {
+      status.className = 'msg err';
+      status.textContent = text;
+      document.getElementById('fallback').hidden = false;
+      btn.disabled = false;
+    }
+
+    form.addEventListener('submit', async function (e) {
+      e.preventDefault();
+      var required = ['name', 'phone', 'email', 'location', 'rig', 'issue'];
+      for (var i = 0; i < required.length; i++) {
+        if (!form.elements[required[i]].value.trim()) { fail('Please fill every required field.'); return; }
+      }
+      btn.disabled = true;
+      status.className = 'msg';
+      status.textContent = 'Sending…';
+      var data = new FormData(form);
+      data.append('subject', 'UMRT Book a Service request (portal)');
+      data.append('form_source', 'portal_book');
+      try {
+        data.append('cf-turnstile-response', await turnstileToken());
+        var res = await fetch(BOOK_API, { method: 'POST', body: data });
+        var json = await res.json().catch(function () { return {}; });
+        if (json.success) {
+          window.location.href = '/track/?booked=1';
+          return;
+        }
+        fail(json.message || 'Could not send. Please text (616) 606-5277.');
+      } catch (err) {
+        fail('Network error. Please text (616) 606-5277.');
+      }
+    });
+  })();
+  </script>
 </body>
 </html>

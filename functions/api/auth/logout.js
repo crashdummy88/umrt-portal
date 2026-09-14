@@ -10,7 +10,3 @@ export async function onRequestPost(context) {
     'Cache-Control': 'no-store',
   });
 }
-
-export async function onRequestGet(context) {
-  return onRequestPost(context);
-}
