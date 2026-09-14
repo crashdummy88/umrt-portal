@@ -9,3 +9,12 @@ pages_build_output_dir = "."
 binding = "DB"
 database_name = "umrt-portal-db"
 database_id = "cad7eb04-167f-4330-b7e4-5e35a52de927"
+
+# New unified DB (2026-09-14) -- schema only (wp_posts/wp_users/wp_media/
+# users/square_transactions/sync_log) applied so far, no sync Worker exists
+# yet to actually populate it. Bound here so the portal can read from it
+# once that sync job is real.
+[[d1_databases]]
+binding = "UNIFIED_DB"
+database_name = "umrt-unified-db"
+database_id = "3442db0b-172b-4246-b5e7-6509dfb7cf23"
