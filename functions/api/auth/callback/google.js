@@ -8,6 +8,7 @@ import {
   upsertOAuthUser,
   json,
 } from '../../../_lib/auth.js';
+import { createSsoCookie } from '../../../_lib/sso.js';
 
 export async function onRequestGet(context) {
   const { env, request } = context;
@@ -91,5 +92,16 @@ export async function onRequestGet(context) {
   });
   headers.append('Set-Cookie', sessionCookie(sessionToken));
   headers.append('Set-Cookie', clearState);
+
+  // Cross-subdomain SSO recognition cookie, additive -- display-only on
+  // forum/docs, never grants portal account access by itself.
+  if (env.SSO_SHARED_SECRET) {
+    const ssoCookie = await createSsoCookie(
+      { sub: info.sub, email: info.email, name: info.name || null, avatar: info.picture || null, provider: 'google' },
+      env.SSO_SHARED_SECRET
+    );
+    headers.append('Set-Cookie', ssoCookie);
+  }
+
   return new Response(null, { status: 302, headers });
 }
