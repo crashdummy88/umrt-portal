@@ -78,7 +78,7 @@ export async function onRequestGet(context) {
     provider: 'facebook',
     providerSub: me.id,
   });
-  const sessionCookieValue = await createCentralSessionCookie(userId, env);
+  const sessionCookieValue = await createCentralSessionCookie(userId, env, request);
 
   const headers = new Headers({
     Location: `${origin}/account/`,

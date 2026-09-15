@@ -74,6 +74,14 @@ function makeRequest(cookieValue) {
   return { headers };
 }
 
+// createCentralSessionCookie() reads request.url to decide whether the
+// Domain attribute is safe to set (security review finding, 2026-09-15:
+// a browser silently drops a Set-Cookie whose Domain doesn't domain-match
+// the responding host -- this app runs ONLY on *.pages.dev today, no
+// custom domain attached yet, so this is not a hypothetical).
+const PORTAL_HOST_REQUEST = { url: 'https://portal.unitedmobilerv.com/api/auth/callback/google' };
+const PAGES_DEV_REQUEST = { url: 'https://umrt-portal.pages.dev/api/auth/callback/google' };
+
 // --- getSessionUser(): legacy format still works ---------------------------
 
 test('getSessionUser: pre-Stage-3 legacy session still authenticates (backward compatibility promise)', async () => {
@@ -111,7 +119,7 @@ test('getSessionUser: new central (Stage 3) session authenticates via the shared
   const db = makeDb({ users: [{ id: 'u2', email: 'central@example.com', name: 'Central User', picture: 'c.png', provider: 'google' }] });
   const env = { SESSION_SECRET: SECRET, CENTRAL_SESSION_SECRET: CENTRAL_SECRET, DB: db };
 
-  const cookie = await createCentralSessionCookie('u2', env);
+  const cookie = await createCentralSessionCookie('u2', env, PORTAL_HOST_REQUEST);
   assert.match(cookie, /Domain=\.unitedmobilerv\.com/, 'central session cookie must be scoped to the whole domain tree');
   const cookieValue = cookie.split('umrt_session=')[1].split(';')[0];
 
@@ -119,10 +127,28 @@ test('getSessionUser: new central (Stage 3) session authenticates via the shared
   assert.deepEqual(user, { id: 'u2', email: 'central@example.com', name: 'Central User', picture: 'c.png', provider: 'google' });
 });
 
+test('createCentralSessionCookie: NEVER sets Domain when served from *.pages.dev (security review finding, 2026-09-15 -- this app has no custom domain attached yet)', async () => {
+  // A browser silently drops a Set-Cookie whose Domain doesn't domain-match
+  // the responding host -- so an unconditional Domain=.unitedmobilerv.com
+  // here would have meant EVERY real login on the live app appeared to
+  // succeed (the D1 rows get written) while the browser never actually
+  // stored a session cookie. Real regression, not a hypothetical.
+  const env = { CENTRAL_SESSION_SECRET: CENTRAL_SECRET, DB: makeDb() };
+  const cookie = await createCentralSessionCookie('u2', env, PAGES_DEV_REQUEST);
+  assert.equal(/Domain=/.test(cookie), false, 'must be host-only when not on a real unitedmobilerv.com subdomain');
+  assert.match(cookie, /^umrt_session=/, 'the cookie itself must still be set -- just without Domain');
+});
+
+test('createCentralSessionCookie: also host-only with no request at all (safe default, never assumes a real subdomain)', async () => {
+  const env = { CENTRAL_SESSION_SECRET: CENTRAL_SECRET, DB: makeDb() };
+  const cookie = await createCentralSessionCookie('u2', env);
+  assert.equal(/Domain=/.test(cookie), false);
+});
+
 test('getSessionUser: central session cookie only verifies against the SAME CENTRAL_SESSION_SECRET it was signed with (models a forum/portal secret mismatch)', async () => {
   const db = makeDb({ users: [{ id: 'u3', email: 'x@example.com' }] });
   const issuingEnv = { CENTRAL_SESSION_SECRET: 'shared-secret-v1', DB: db };
-  const cookie = await createCentralSessionCookie('u3', issuingEnv);
+  const cookie = await createCentralSessionCookie('u3', issuingEnv, PORTAL_HOST_REQUEST);
   const cookieValue = cookie.split('umrt_session=')[1].split(';')[0];
 
   const mismatchedEnv = { SESSION_SECRET: SECRET, CENTRAL_SESSION_SECRET: 'a-DIFFERENT-secret', DB: db };
@@ -137,7 +163,7 @@ test('getSessionUser: central session cookie only verifies against the SAME CENT
 test('getSessionUser: expired central session fails closed and deletes the row', async () => {
   const db = makeDb({ users: [{ id: 'u4', email: 'x@example.com' }] });
   const env = { SESSION_SECRET: SECRET, CENTRAL_SESSION_SECRET: CENTRAL_SECRET, DB: db };
-  const cookie = await createCentralSessionCookie('u4', env);
+  const cookie = await createCentralSessionCookie('u4', env, PORTAL_HOST_REQUEST);
   const cookieValue = cookie.split('umrt_session=')[1].split(';')[0];
   db._sessions[0].expires_at = new Date(Date.now() - 1000).toISOString();
 
@@ -149,7 +175,7 @@ test('getSessionUser: expired central session fails closed and deletes the row',
 test('getSessionUser: session row missing entirely (e.g. already logged out elsewhere) -> null', async () => {
   const db = makeDb({ users: [{ id: 'u5', email: 'x@example.com' }] });
   const env = { SESSION_SECRET: SECRET, CENTRAL_SESSION_SECRET: CENTRAL_SECRET, DB: db };
-  const cookie = await createCentralSessionCookie('u5', env);
+  const cookie = await createCentralSessionCookie('u5', env, PORTAL_HOST_REQUEST);
   const cookieValue = cookie.split('umrt_session=')[1].split(';')[0];
   db._sessions = []; // simulate the row having already been deleted
 
@@ -180,7 +206,7 @@ test('destroySession: deletes the row for a legacy-format session', async () => 
 test('destroySession: deletes the row for a central-format session', async () => {
   const db = makeDb({ users: [{ id: 'u7', email: 'x@example.com' }] });
   const env = { SESSION_SECRET: SECRET, CENTRAL_SESSION_SECRET: CENTRAL_SECRET, DB: db };
-  const cookie = await createCentralSessionCookie('u7', env);
+  const cookie = await createCentralSessionCookie('u7', env, PORTAL_HOST_REQUEST);
   const cookieValue = cookie.split('umrt_session=')[1].split(';')[0];
 
   assert.equal(db._sessions.length, 1);
@@ -199,7 +225,7 @@ test('destroySession: no-ops harmlessly with no cookie at all', async () => {
 
 test('sessionCookie / clearCentralSessionCookie: Domain attributes match their create-side counterparts', async () => {
   const legacy = sessionCookie('sometoken');
-  const central = await createCentralSessionCookie('u8', { CENTRAL_SESSION_SECRET: CENTRAL_SECRET, DB: makeDb() });
+  const central = await createCentralSessionCookie('u8', { CENTRAL_SESSION_SECRET: CENTRAL_SECRET, DB: makeDb() }, PORTAL_HOST_REQUEST);
   assert.equal(/Domain=/.test(legacy), false, 'legacy cookie is host-only, no Domain attribute');
   assert.equal(/Domain=/.test(sessionCookie('', true)), false, 'legacy clear must also be host-only to actually match and clear it');
   assert.match(central, /Domain=\.unitedmobilerv\.com/);

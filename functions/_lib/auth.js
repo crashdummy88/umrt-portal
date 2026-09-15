@@ -26,12 +26,35 @@
  * are UNCHANGED and kept only so an existing legacy cookie keeps
  * verifying until it naturally expires (14 days) or the user logs in
  * again.
+ *
+ * SECURITY REVIEW FIX (2026-09-15, before this ever shipped): this app is
+ * confirmed, in its own docs (CF_PAGES.md / README.md), to still be
+ * running ONLY on umrt-portal.pages.dev -- no custom domain attached yet.
+ * A browser silently DROPS a Set-Cookie whose Domain attribute doesn't
+ * domain-match the responding host, so an unconditional
+ * Domain=.unitedmobilerv.com here would have meant every login on the
+ * live app appeared to succeed (the D1 rows get written fine) while the
+ * browser never actually stored a session cookie -- a real regression,
+ * not just a missed SSO feature. createCentralSessionCookie() below only
+ * sets Domain when the request is actually on a real *.unitedmobilerv.com
+ * subdomain; see isRealSubdomainHost(). This also closes a second issue:
+ * Domain=.unitedmobilerv.com covers the bare apex too, i.e. the
+ * WordPress-hosted marketing site -- a separate, less-trusted piece of
+ * infrastructure that should never see a real session token.
  */
 
 const SESSION_COOKIE = 'umrt_session';
 const STATE_COOKIE = 'umrt_oauth_state';
 const SESSION_DAYS = 14;
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+// True only for a real *.unitedmobilerv.com subdomain (forum., portal.,
+// shop., docs., ...) -- false for the bare apex (WordPress, a different
+// trust boundary) and false for any *.pages.dev host. See the file-header
+// comment above (SECURITY REVIEW FIX) for why this can't be unconditional.
+function isRealSubdomainHost(hostname) {
+  return /\.unitedmobilerv\.com$/i.test(hostname || '');
+}
 
 function b64url(buf) {
   const bytes = buf instanceof ArrayBuffer ? new Uint8Array(buf) : buf;
@@ -129,11 +152,11 @@ export function sessionCookie(value, clear = false) {
  * once this is set (there is never a duplicate to clean up beyond the
  * dual clear() below for whichever shape the browser actually still has).
  */
-export function centralSessionCookie(value, clear = false) {
+export function centralSessionCookie(value, clear = false, domain = '.unitedmobilerv.com') {
   return cookieHeader(SESSION_COOKIE, value, {
     maxAge: clear ? 0 : SESSION_DAYS * 86400,
     clear,
-    domain: '.unitedmobilerv.com',
+    domain,
   });
 }
 
@@ -167,12 +190,18 @@ export async function createSession(db, userId, secret) {
 
 /**
  * Stage 3: issues a CENTRAL session -- same `sessions` table, but a
- * crypto.randomUUID() id signed with the shared CENTRAL_SESSION_SECRET,
- * in a cookie scoped to the whole unitedmobilerv.com domain tree. Returns
- * the raw Set-Cookie value (not just the token) since the domain scoping
- * has to be baked in here, same shape as sessionCookie()'s return.
+ * crypto.randomUUID() id signed with the shared CENTRAL_SESSION_SECRET.
+ * Domain-wide (Domain=.unitedmobilerv.com) ONLY when `request` shows
+ * we're actually being served from a real *.unitedmobilerv.com host;
+ * host-only otherwise (e.g. still on *.pages.dev) -- see
+ * isRealSubdomainHost() and the file-header SECURITY REVIEW FIX comment
+ * for why. `request` is optional for backward compatibility with
+ * existing callers/tests, but its absence means "assume not a real
+ * subdomain" (host-only) -- always pass it in real code. Returns the raw
+ * Set-Cookie value (not just the token), same shape as sessionCookie()'s
+ * return.
  */
-export async function createCentralSessionCookie(userId, env) {
+export async function createCentralSessionCookie(userId, env, request) {
   const rawId = crypto.randomUUID();
   const signed = await signSessionId(rawId, env.CENTRAL_SESSION_SECRET);
   const expires = new Date(Date.now() + SESSION_DAYS * 86400 * 1000).toISOString();
@@ -180,7 +209,9 @@ export async function createCentralSessionCookie(userId, env) {
     .prepare('INSERT INTO sessions (id, user_id, expires_at) VALUES (?, ?, ?)')
     .bind(rawId, userId, expires)
     .run();
-  return centralSessionCookie(signed);
+  const hostname = request ? new URL(request.url).hostname : '';
+  const domain = isRealSubdomainHost(hostname) ? '.unitedmobilerv.com' : null;
+  return centralSessionCookie(signed, false, domain);
 }
 
 /**

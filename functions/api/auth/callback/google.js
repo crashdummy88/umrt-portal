@@ -84,7 +84,7 @@ export async function onRequestGet(context) {
     provider: 'google',
     providerSub: info.sub,
   });
-  const sessionCookieValue = await createCentralSessionCookie(userId, env);
+  const sessionCookieValue = await createCentralSessionCookie(userId, env, request);
 
   const headers = new Headers({
     Location: `${origin}/account/`,
