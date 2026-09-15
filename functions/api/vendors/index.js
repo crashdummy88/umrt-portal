@@ -10,6 +10,7 @@
  */
 import { getSessionUser, json } from '../../_lib/auth.js';
 import { sanitizeHttpUrl } from '../../_lib/url-safety.js';
+import { checkRateLimit } from '../../_lib/rate-limit.js';
 
 export async function onRequestGet(context) {
   const { env, request } = context;
@@ -36,6 +37,15 @@ export async function onRequestPost(context) {
   const user = await getSessionUser(env, request);
   if (!user) return json({ error: 'unauthorized' }, 401, { 'Cache-Control': 'no-store' });
   if (!env.DB) return json({ error: 'not_configured' }, 503);
+
+  // Added 2026-09-15: this write had no throttle at all -- the
+  // "one application per user" check below already stops the same user
+  // from applying twice, but did nothing against rapid-fire attempts
+  // across many accounts/sessions from one source.
+  const rl = await checkRateLimit(env, request, { max: 5, windowMinutes: 10, key: 'vendor-apply' });
+  if (rl.limited) {
+    return json({ error: 'rate_limited', retry_after: rl.retryAfter }, 429, { 'Cache-Control': 'no-store' });
+  }
 
   const existing = await env.DB.prepare('SELECT id FROM vendors WHERE user_id = ?').bind(user.id).first();
   if (existing) {
