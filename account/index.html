@@ -108,7 +108,13 @@
       })
       .then(function (data) {
         hide(loading);
-        if (data && data.user) {
+        // ssoOnly means /api/auth/me is showing the cross-subdomain display
+        // cookie (e.g. logged in on forum, not here), never a real portal
+        // session -- account/booking/tracking need a real sign-in, so this
+        // must render the same as signed-out, not the authenticated view.
+        // Fixed 2026-09-15 alongside the logout fix (same class of bug: a
+        // display-only identity being indistinguishable from real auth).
+        if (data && data.user && !data.user.ssoOnly) {
           var u = data.user;
           nameEl.textContent = u.name || 'UMRT member';
           emailEl.textContent = u.email || 'Authenticated account';
