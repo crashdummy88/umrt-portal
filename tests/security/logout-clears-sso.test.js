@@ -18,6 +18,13 @@
  *      failure class via a different path (recognized via forum/docs
  *      login, never actually signed into the portal itself).
  *
+ * Updated 2026-09-15 alongside auth-unification Stage 3: logout now sends
+ * a THIRD Set-Cookie too, clearing the new Domain-wide central session
+ * cookie (same umrt_session name, but Domain=.unitedmobilerv.com) --
+ * without it, a Stage-3 central session would survive "logout" since a
+ * clearing Set-Cookie only matches a cookie with the same Domain
+ * attribute it was originally set with.
+ *
  * Run: node tests/security/logout-clears-sso.test.js
  */
 import fs from 'node:fs';
@@ -30,8 +37,8 @@ function makeRequest(cookie) {
   return { headers };
 }
 
-test('POST /api/auth/logout sends Set-Cookie for BOTH umrt_session and umrt_sso (THE FIX)', async () => {
-  const env = {}; // no SESSION_SECRET/DB needed -- destroySession is skipped, cookie-clearing still runs
+test('POST /api/auth/logout sends Set-Cookie for umrt_session (both shapes) and umrt_sso (THE FIX + Stage 3)', async () => {
+  const env = {}; // no DB/secrets needed -- destroySession() no-ops, cookie-clearing still runs
   const res = await logoutHandler({ env, request: makeRequest('umrt_session=abc.def; umrt_sso=ghi.jkl') });
   assert.equal(res.status, 200);
 
@@ -39,8 +46,11 @@ test('POST /api/auth/logout sends Set-Cookie for BOTH umrt_session and umrt_sso 
     ? res.headers.getSetCookie()
     : [...res.headers.entries()].filter(([k]) => k.toLowerCase() === 'set-cookie').map(([, v]) => v);
 
-  assert.equal(setCookies.length, 2, `expected 2 Set-Cookie headers, got ${setCookies.length}: ${JSON.stringify(setCookies)}`);
-  assert.ok(setCookies.some((c) => c.startsWith('umrt_session=') && c.includes('Max-Age=0')), 'expected umrt_session cleared');
+  assert.equal(setCookies.length, 3, `expected 3 Set-Cookie headers, got ${setCookies.length}: ${JSON.stringify(setCookies)}`);
+  const sessionClears = setCookies.filter((c) => c.startsWith('umrt_session=') && c.includes('Max-Age=0'));
+  assert.equal(sessionClears.length, 2, 'expected umrt_session cleared in BOTH shapes (legacy host-only + Stage 3 Domain-wide)');
+  assert.ok(sessionClears.some((c) => !c.includes('Domain=')), 'expected a host-only clear (matches the legacy cookie)');
+  assert.ok(sessionClears.some((c) => c.includes('Domain=.unitedmobilerv.com')), 'expected a Domain-wide clear (matches a Stage 3 central cookie)');
   assert.ok(setCookies.some((c) => c.startsWith('umrt_sso=') && c.includes('Max-Age=0')), 'expected umrt_sso cleared (THE FIX -- this is what was missing)');
 });
 

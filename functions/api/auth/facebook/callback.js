@@ -1,10 +1,9 @@
 import {
   parseCookies,
   stateCookie,
-  sessionCookie,
   STATE_COOKIE,
   originOf,
-  createSession,
+  createCentralSessionCookie,
   upsertOAuthUser,
   json,
 } from '../../../_lib/auth.js';
@@ -19,7 +18,9 @@ export async function onRequestGet(context) {
       503
     );
   }
-  if (!env.SESSION_SECRET || !env.DB) {
+  // Stage 3: login issues a CENTRAL session now, so CENTRAL_SESSION_SECRET
+  // (not this app's own SESSION_SECRET) is what's actually required here.
+  if (!env.CENTRAL_SESSION_SECRET || !env.DB) {
     return json({ error: 'Auth env or DB binding missing' }, 503);
   }
 
@@ -77,13 +78,13 @@ export async function onRequestGet(context) {
     provider: 'facebook',
     providerSub: me.id,
   });
-  const sessionToken = await createSession(env.DB, userId, env.SESSION_SECRET);
+  const sessionCookieValue = await createCentralSessionCookie(userId, env);
 
   const headers = new Headers({
     Location: `${origin}/account/`,
     'Cache-Control': 'no-store',
   });
-  headers.append('Set-Cookie', sessionCookie(sessionToken));
+  headers.append('Set-Cookie', sessionCookieValue);
   headers.append('Set-Cookie', clearState);
   return new Response(null, { status: 302, headers });
 }

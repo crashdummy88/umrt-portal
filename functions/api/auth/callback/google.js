@@ -1,10 +1,9 @@
 import {
   parseCookies,
   stateCookie,
-  sessionCookie,
   STATE_COOKIE,
   originOf,
-  createSession,
+  createCentralSessionCookie,
   upsertOAuthUser,
   json,
 } from '../../../_lib/auth.js';
@@ -36,8 +35,9 @@ export async function onRequestGet(context) {
 
   const clientId = env.GOOGLE_CLIENT_ID;
   const clientSecret = env.GOOGLE_CLIENT_SECRET;
-  const secret = env.SESSION_SECRET;
-  if (!clientId || !clientSecret || !secret || !env.DB) {
+  // Stage 3: login issues a CENTRAL session now, so CENTRAL_SESSION_SECRET
+  // (not this app's own SESSION_SECRET) is what's actually required here.
+  if (!clientId || !clientSecret || !env.CENTRAL_SESSION_SECRET || !env.DB) {
     return json({ error: 'Auth env or DB binding missing' }, 503);
   }
 
@@ -84,13 +84,13 @@ export async function onRequestGet(context) {
     provider: 'google',
     providerSub: info.sub,
   });
-  const sessionToken = await createSession(env.DB, userId, secret);
+  const sessionCookieValue = await createCentralSessionCookie(userId, env);
 
   const headers = new Headers({
     Location: `${origin}/account/`,
     'Cache-Control': 'no-store',
   });
-  headers.append('Set-Cookie', sessionCookie(sessionToken));
+  headers.append('Set-Cookie', sessionCookieValue);
   headers.append('Set-Cookie', clearState);
 
   // Cross-subdomain SSO recognition cookie, additive -- display-only on
