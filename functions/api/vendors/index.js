@@ -94,6 +94,6 @@ export async function onRequestPost(context) {
     success: true,
     vendorId: id,
     status: 'pending',
-    message: 'Application received. Matt reviews new listings by hand -- you’ll hear back before anything goes live or is billed.',
+    message: 'Application received. Our team reviews new listings by hand -- you’ll hear back before anything goes live or is billed.',
   }, 201, { 'Cache-Control': 'no-store' });
 }
