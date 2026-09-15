@@ -9,6 +9,7 @@
  * header comment for why. One application per user (checked by user_id).
  */
 import { getSessionUser, json } from '../../_lib/auth.js';
+import { sanitizeHttpUrl } from '../../_lib/url-safety.js';
 
 export async function onRequestGet(context) {
   const { env, request } = context;
@@ -55,6 +56,16 @@ export async function onRequestPost(context) {
     return json({ error: 'missing_field', message: 'businessName, category (tech|vendor), and contactEmail are required.' }, 400);
   }
 
+  // Fixed 2026-09-15: `website` used to be stored as-is (only HTML-escaped
+  // later at render time), which let a javascript:/data:/vbscript: value
+  // survive as a live, clickable link on the public /directory/ page once
+  // an admin approved the listing. Reject anything that isn't a real
+  // http(s) URL at the storage boundary -- see _lib/url-safety.js.
+  const websiteCheck = sanitizeHttpUrl(body.website);
+  if (!websiteCheck.ok) {
+    return json({ error: websiteCheck.error, message: websiteCheck.message }, 400);
+  }
+
   const id = crypto.randomUUID();
   await env.DB.prepare(
     `INSERT INTO vendors (id, user_id, business_name, category, trade_focus, description, contact_email, contact_phone, website, service_area)
@@ -65,7 +76,7 @@ export async function onRequestPost(context) {
     (body.description || '').toString().trim() || null,
     contactEmail,
     (body.contactPhone || '').toString().trim() || null,
-    (body.website || '').toString().trim() || null,
+    websiteCheck.url,
     (body.serviceArea || '').toString().trim() || null
   ).run();
 

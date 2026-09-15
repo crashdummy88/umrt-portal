@@ -41,6 +41,16 @@
       .setAttribute('aria-current', 'page');
 
     function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
+    // Fixed 2026-09-15: esc() HTML-escapes but never blocked a javascript:/
+    // data: scheme from rendering as a live href -- the real fix is
+    // server-side (POST /api/vendors, see functions/_lib/url-safety.js),
+    // but this is a second, independent check so the directory stays safe
+    // even if an unsafe value ever reaches storage another way (a stale
+    // row from before the fix, a future admin edit path, etc).
+    function isSafeHttpUrl(s){
+      try { var u = new URL(String(s||'')); return u.protocol === 'http:' || u.protocol === 'https:'; }
+      catch (e) { return false; }
+    }
 
     fetch('/api/vendors' + (category ? '?category=' + encodeURIComponent(category) : ''))
       .then(function(r){ return r.json(); })
@@ -59,7 +69,7 @@
             (v.trade_focus ? '<p class="muted">' + esc(v.trade_focus) + '</p>' : '') +
             (v.description ? '<p>' + esc(v.description) + '</p>' : '') +
             (v.service_area ? '<p class="muted">Serves: ' + esc(v.service_area) + '</p>' : '') +
-            (v.website ? '<p><a href="' + esc(v.website) + '" rel="noopener noreferrer" target="_blank">' + esc(v.website) + '</a></p>' : '') +
+            (v.website && isSafeHttpUrl(v.website) ? '<p><a href="' + esc(v.website) + '" rel="noopener noreferrer" target="_blank">' + esc(v.website) + '</a></p>' : '') +
             '</div>';
         }).join('');
       })
