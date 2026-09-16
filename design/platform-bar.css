@@ -3,7 +3,7 @@
    cellular/satellite links (weBoost/Starlink users are the audience). */
 
 .umrt-platform-bar {
-  background: #0C0C0C;
+  background: #1A1A1A;
   border-bottom: 1px solid rgba(255,255,255,0.12);
   font-family: "Inter", "Helvetica Neue", Helvetica, Arial, system-ui, sans-serif;
 }
