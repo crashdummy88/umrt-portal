@@ -41,18 +41,18 @@
     </header>
     <main>
       <h1>Track service</h1>
-      <div id="signed-out" hidden>
-        <p class="lede">Sign in to see your service requests.</p>
-        <a class="btn" href="/account/">Sign in</a>
+      <p class="lede">Jobs on file for the email on your portal account — the same email you used when you booked.</p>
+      <div id="signed-out" class="card" hidden>
+        <h2>Sign in required</h2>
+        <p>A portal session is required to see requests. Google sign-in, then you come back here.</p>
+        <p style="margin-top:1rem"><a class="btn" href="/account/?next=/track/">Sign in to track</a></p>
       </div>
       <div id="signed-in" hidden>
-        <p class="lede">Jobs tied to your account email.</p>
+        <p class="note">Showing jobs tied to this account email.</p>
         <div id="job-list"></div>
-        <p id="empty-note" class="muted" hidden>No service requests on file yet for this email. <a href="/book/">Request one</a>, or if you've already submitted the form, Text Now and we'll confirm.</p>
+        <p id="empty-note" class="card" hidden>No service requests on file yet for this email. <a href="/book/">Request one</a>, or if you've already booked on Square, Text Now and we'll confirm the match.</p>
       </div>
-      <div id="loading"><p class="muted">Loading…</p></div>
-      <p style="margin-top:2rem"><a class="btn btn-ghost" href="sms:+16166065277">Text Now</a> <a class="btn" href="https://united-mobile-rv-llc.square.site/">Book</a></p>
-      <p class="muted"><a href="tel:+16166065277">(616) 606-5277</a></p>
+      <div id="loading" class="card loading-card"><div class="spinner" aria-hidden="true"></div><div><strong>Checking your session</strong><p class="note">Looking up jobs for this account…</p></div></div>
     </main>
     <footer>United Mobile RV LLC · <a href="tel:+16166065277">(616) 606-5277</a> · <a href="sms:+16166065277">Text Now</a> · <a href="https://united-mobile-rv-llc.square.site/">Book</a> · <a href="https://unitedmobilerv.com/">Main Hub</a> · <a href="https://forum.unitedmobilerv.com/">Forum</a> · <a href="https://software.unitedmobilerv.com/">Software</a> · <a href="https://status.unitedmobilerv.com/">Status</a> · <a href="https://shop.unitedmobilerv.com/">Shop</a> · <a href="https://docs.unitedmobilerv.com/">Docs</a></footer>
   </div>
@@ -71,13 +71,15 @@
       .then(function (r) { return r.status === 200 ? r.json() : null; })
       .then(function (meData) {
         document.getElementById('loading').hidden = true;
-        if (!meData || !meData.user) {
+        // ssoOnly is display-only (forum/docs cookie) — Track needs a real
+        // portal session, same rule as /account/.
+        if (!meData || !meData.user || meData.user.ssoOnly) {
           document.getElementById('signed-out').hidden = false;
           return;
         }
         document.getElementById('signed-in').hidden = false;
         return fetch('/api/jobs/mine', { credentials: 'include' })
-          .then(function (r) { return r.json(); })
+          .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('jobs')); })
           .then(function (data) {
             var jobs = (data && data.jobs) || [];
             var list = document.getElementById('job-list');
@@ -88,14 +90,18 @@
             list.innerHTML = jobs.map(function (j) {
               var rig = [j.rv_year, j.rv_make, j.rv_model].filter(Boolean).join(' ');
               var where = [j.city, j.state].filter(Boolean).join(', ');
-              return '<div class="job-card">' +
+              return '<div class="job-card card">' +
                 '<span class="job-status ' + esc(j.status) + '">' + esc(statusLabel(j.status)) + '</span>' +
                 '<h3 style="margin:.5rem 0 0">' + (rig ? esc(rig) : 'Service request') + '</h3>' +
-                '<p class="muted" style="margin:.25rem 0">' + esc(j.issue) + '</p>' +
-                (where ? '<p class="muted" style="margin:0;font-size:.85em">' + esc(where) + '</p>' : '') +
-                '<p class="muted" style="margin:.25rem 0 0;font-size:.8em">Submitted ' + esc(String(j.created_at).slice(0, 10)) + '</p>' +
+                '<p class="note" style="margin:.25rem 0">' + esc(j.issue) + '</p>' +
+                (where ? '<p class="note" style="margin:0;font-size:.85em">' + esc(where) + '</p>' : '') +
+                '<p class="note" style="margin:.25rem 0 0;font-size:.8em">Submitted ' + esc(String(j.created_at).slice(0, 10)) + '</p>' +
               '</div>';
             }).join('');
+          })
+          .catch(function () {
+            document.getElementById('signed-in').hidden = true;
+            document.getElementById('signed-out').hidden = false;
           });
       })
       .catch(function () {

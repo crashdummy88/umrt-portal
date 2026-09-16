@@ -25,6 +25,7 @@
     <header>
       <a class="brand" href="/" aria-label="United Mobile RV Portal home"><img src="/assets/brand/umrt-logo.webp" width="54" height="42" alt="United Mobile RV" fetchpriority="high" decoding="async"/></a>
       <nav aria-label="Portal navigation">
+        <a href="/">Home</a>
         <a href="/book/">Request</a>
         <a href="/track/">Track</a>
         <a href="/directory/">Directory</a>
@@ -43,6 +44,7 @@
       <div class="eyebrow">UMRT Portal</div>
       <h1>Your account</h1>
       <p class="lede">One account for your United Mobile RV activity, service access and community participation.</p>
+      <p id="auth-error" class="msg err" hidden role="alert"></p>
 
       <div id="loading" class="card loading-card" aria-live="polite">
         <div class="spinner" aria-hidden="true"></div>
@@ -62,7 +64,7 @@
 
       <section id="signed-in" hidden>
         <div class="account-hero card">
-          <div class="account-avatar" aria-hidden="true">UM</div>
+          <div class="account-avatar" id="profile-initials" aria-hidden="true">UM</div>
           <div class="account-main">
             <span class="badge live">Signed in</span>
             <h2 id="profile-name">Your UMRT account</h2>
@@ -75,17 +77,17 @@
           <a class="portal-card" href="/community/">
             <span class="portal-icon">◆</span><span><strong>Community</strong><small>Join technical discussions, ask questions and follow solutions.</small></span><span class="arrow">→</span>
           </a>
-          <a class="portal-card" href="https://united-mobile-rv-llc.square.site/">
-            <span class="portal-icon">+</span><span><strong>Book service</strong><small>Start a service request with United Mobile RV.</small></span><span class="arrow">→</span>
+          <a class="portal-card" href="/book/">
+            <span class="portal-icon">+</span><span><strong>Book service</strong><small>Square appointment, then track it here.</small></span><span class="arrow">→</span>
           </a>
           <a class="portal-card" href="/track/">
             <span class="portal-icon">↗</span><span><strong>Track service</strong><small>Check the status of an active service request.</small></span><span class="arrow">→</span>
           </a>
+          <a class="portal-card" href="/directory/">
+            <span class="portal-icon">▣</span><span><strong>Directory</strong><small>Browse listings or apply to be listed.</small></span><span class="arrow">→</span>
+          </a>
           <a class="portal-card" href="https://shop.unitedmobilerv.com/">
             <span class="portal-icon">◇</span><span><strong>Shop</strong><small>Gear, parts, and accessories.</small></span><span class="arrow">→</span>
-          </a>
-          <a class="portal-card" href="https://square.link/u/STB7z2B6">
-            <span class="portal-icon">$</span><span><strong>Pay deposit</strong><small>$225 service deposit once your appointment is confirmed.</small></span><span class="arrow">→</span>
           </a>
         </div>
 
@@ -117,16 +119,61 @@
     var inn = document.getElementById('signed-in');
     var nameEl = document.getElementById('profile-name');
     var emailEl = document.getElementById('profile-email');
+    var initialsEl = document.getElementById('profile-initials');
     var fbWrap = document.getElementById('fb-wrap');
+    var errEl = document.getElementById('auth-error');
+    var params = new URLSearchParams(location.search);
+    var ALLOWED_NEXT = {
+      '/': 1, '/book/': 1, '/track/': 1, '/account/': 1,
+      '/directory/': 1, '/directory/apply.html': 1, '/community/': 1
+    };
+    var ERRORS = {
+      oauth: 'Sign-in was cancelled or failed. Try Google again.',
+      state: 'That sign-in link expired. Start again.',
+      token: 'Could not complete sign-in. Try again.',
+      userinfo: 'Could not read your profile. Try again.',
+      email: 'Google did not share an email we can use.',
+      facebook: 'Facebook sign-in is not enabled on this portal. Use Google.'
+    };
 
     function show(el) { el.hidden = false; }
     function hide(el) { el.hidden = true; }
+    function safeNext(raw) {
+      if (!raw || raw.charAt(0) !== '/' || raw.indexOf('//') === 0) return '';
+      if (raw.indexOf('\\') !== -1 || raw.indexOf('://') !== -1) return '';
+      var path = raw.split('?')[0].split('#')[0];
+      return ALLOWED_NEXT[path] ? path : '';
+    }
+    function initials(name, email) {
+      var parts = String(name || '').trim().split(/\s+/).filter(Boolean);
+      if (parts.length >= 2) return (parts[0].charAt(0) + parts[1].charAt(0)).toUpperCase();
+      if (parts[0]) return parts[0].slice(0, 2).toUpperCase();
+      if (email) return email.slice(0, 2).toUpperCase();
+      return 'UM';
+    }
+
+    var next = safeNext(params.get('next'));
+    var errCode = params.get('error');
+    if (errCode && ERRORS[errCode]) {
+      errEl.textContent = ERRORS[errCode];
+      show(errEl);
+    }
+    if (next) {
+      var googleBtn = document.querySelector('a.btn-google');
+      var fbBtn = document.getElementById('fb-btn');
+      if (googleBtn) googleBtn.href = '/api/auth/google/start?next=' + encodeURIComponent(next);
+      if (fbBtn) fbBtn.href = '/api/auth/facebook/start?next=' + encodeURIComponent(next);
+    }
 
     fetch('/api/auth/me', { credentials: 'same-origin' })
       .then(function (r) {
-        if (r.status === 401) return null;
-        if (!r.ok) throw new Error('me failed');
-        return r.json();
+        return r.json().then(function (data) {
+          if (!r.ok && r.status !== 401) throw new Error('me failed');
+          return data || {};
+        }).catch(function () {
+          if (r.status === 401) return {};
+          throw new Error('me failed');
+        });
       })
       .then(function (data) {
         hide(loading);
@@ -137,9 +184,14 @@
         // Fixed 2026-09-15 alongside the logout fix (same class of bug: a
         // display-only identity being indistinguishable from real auth).
         if (data && data.user && !data.user.ssoOnly) {
+          if (next && next !== '/account/') {
+            location.replace(next);
+            return;
+          }
           var u = data.user;
           nameEl.textContent = u.name || 'UMRT member';
           emailEl.textContent = u.email || 'Authenticated account';
+          if (initialsEl) initialsEl.textContent = initials(u.name, u.email);
           show(inn);
         } else {
           show(out);

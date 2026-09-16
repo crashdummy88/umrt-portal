@@ -1,15 +1,20 @@
-import { randomToken, stateCookie, originOf, json } from '../../../_lib/auth.js';
+import { randomToken, stateCookie, nextCookie, safeNextPath, originOf, json } from '../../../_lib/auth.js';
 import { checkRateLimit } from '../../../_lib/rate-limit.js';
 
 export async function onRequestGet(context) {
   const { env, request } = context;
   const appId = env.FACEBOOK_APP_ID;
   const appSecret = env.FACEBOOK_APP_SECRET;
+  const origin = originOf(request);
   if (!appId || !appSecret) {
-    return json(
-      { error: 'Facebook login not configured', code: 'FACEBOOK_NOT_CONFIGURED' },
-      503
-    );
+    // Browser start URL — send people back to Account instead of a raw 503 JSON page.
+    return new Response(null, {
+      status: 302,
+      headers: {
+        Location: `${origin}/account/?error=facebook`,
+        'Cache-Control': 'no-store',
+      },
+    });
   }
 
   // Added 2026-09-15: OAuth start had no throttle at all.
@@ -17,9 +22,9 @@ export async function onRequestGet(context) {
   if (rl.limited) {
     return json({ error: 'rate_limited', retry_after: rl.retryAfter }, 429);
   }
-  const origin = originOf(request);
   const redirectUri = `${origin}/api/auth/facebook/callback`;
   const state = await randomToken(24);
+  const next = safeNextPath(new URL(request.url).searchParams.get('next'));
   const params = new URLSearchParams({
     client_id: appId,
     redirect_uri: redirectUri,
@@ -27,12 +32,11 @@ export async function onRequestGet(context) {
     scope: 'email,public_profile',
     response_type: 'code',
   });
-  return new Response(null, {
-    status: 302,
-    headers: {
-      Location: `https://www.facebook.com/v19.0/dialog/oauth?${params}`,
-      'Set-Cookie': stateCookie(state),
-      'Cache-Control': 'no-store',
-    },
+  const headers = new Headers({
+    Location: `https://www.facebook.com/v19.0/dialog/oauth?${params}`,
+    'Cache-Control': 'no-store',
   });
+  headers.append('Set-Cookie', stateCookie(state));
+  headers.append('Set-Cookie', next ? nextCookie(next) : nextCookie('', true));
+  return new Response(null, { status: 302, headers });
 }

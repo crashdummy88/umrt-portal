@@ -1,8 +1,8 @@
 # Cloudflare Pages — umrt-portal
 
 Connect Git `crashdummy88/umrt-portal` → Framework None · Build empty · Output `/`.
-Tip: `https://umrt-portal.pages.dev`
-No WP domain attach (HOLD — pages.dev only). Keep `robots.txt` Disallow + meta `noindex,follow`.
+Hosts: `https://portal.unitedmobilerv.com` and `https://umrt-portal.pages.dev`.
+Keep `robots.txt` Disallow + meta `noindex,follow`.
 
 ## D1
 
@@ -24,8 +24,18 @@ Set these **names** (production + preview as needed). Never commit values.
 
 ## Google OAuth redirect URI
 
+Register **both** (start uses the request origin):
+
 ```
+https://portal.unitedmobilerv.com/api/auth/callback/google
 https://umrt-portal.pages.dev/api/auth/callback/google
+```
+
+Facebook (optional) callback:
+
+```
+https://portal.unitedmobilerv.com/api/auth/facebook/callback
+https://umrt-portal.pages.dev/api/auth/facebook/callback
 ```
 
 Scopes: `openid email profile`.
