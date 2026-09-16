@@ -13,5 +13,5 @@ label{display:block;font-size:.85rem;font-weight:600;margin:.75rem 0 .35rem}inpu
 
 /* Sticky mobile action bar -- added 2026-09-16, matches mothership pattern */
 .mobile-bar{display:none;position:fixed;bottom:0;left:0;right:0;z-index:200;background:#1A1A1A;-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-top:1px solid var(--line);padding:10px 16px calc(10px + env(safe-area-inset-bottom));gap:10px;box-shadow:0 -8px 24px rgba(0,0,0,0.35)}
-.mobile-bar .btn{flex:1;min-height:44px;text-align:center}
-@media (max-width:900px){.mobile-bar{display:flex}body{padding-bottom:72px}}
+.mobile-bar .btn{flex:1;min-height:44px;text-align:center;line-height:1.2}
+@media (max-width:900px){.mobile-bar{display:flex}body{padding-bottom:88px}}
