@@ -5,13 +5,25 @@
   <title>Apply to the Directory · UMRT Portal</title>
   <meta name="robots" content="noindex,follow">
   <link rel="stylesheet" href="/assets/styles.css">
+  <link rel="stylesheet" href="/design/platform-bar.css">
   <style>.muted{color:#666} label{display:block;margin-top:12px;font-weight:600} input,select,textarea{width:100%;padding:8px;border:1px solid #ccc;border-radius:6px;font:inherit} textarea{min-height:80px}</style>
 </head>
 <body>
+  <div class="umrt-platform-bar" role="navigation" aria-label="UMRT properties">
+    <div class="umrt-platform-bar-inner">
+      <a href="https://unitedmobilerv.com/" data-platform-link="hub">Main Hub</a>
+      <a href="https://forum.unitedmobilerv.com/" data-platform-link="forum">Forum</a>
+      <a href="https://software.unitedmobilerv.com/" data-platform-link="software">Software</a>
+      <a href="https://status.unitedmobilerv.com/" data-platform-link="status">Status</a>
+      <a href="https://portal.unitedmobilerv.com/" data-platform-link="portal" class="is-current">Portal</a>
+      <a href="https://shop.unitedmobilerv.com/" data-platform-link="shop">Shop</a>
+      <a href="https://docs.unitedmobilerv.com/" data-platform-link="docs">Docs</a>
+    </div>
+  </div>
   <div class="wrap">
     <header>
       <a class="brand" href="/">United Mobile <span>RV</span></a>
-      <nav aria-label="Portal navigation"><a href="/">Home</a><a href="/directory/">Directory</a><a href="/account/">Account</a></nav>
+      <nav aria-label="Portal navigation"><a href="/">Home</a><a href="https://book.unitedmobilerv.com/">Book</a><a href="/directory/">Directory</a><a href="/account/">Account</a></nav>
     </header>
     <main>
       <h1>Apply to the directory</h1>
@@ -59,7 +71,7 @@
         <p id="status" class="muted" role="status"></p>
       </form>
     </main>
-    <footer>United Mobile RV LLC</footer>
+    <footer>United Mobile RV LLC · <a href="https://unitedmobilerv.com/">Main Hub</a> · <a href="https://forum.unitedmobilerv.com/">Forum</a> · <a href="https://software.unitedmobilerv.com/">Software</a> · <a href="https://status.unitedmobilerv.com/">Status</a> · <a href="https://portal.unitedmobilerv.com/">Portal</a> · <a href="https://shop.unitedmobilerv.com/">Shop</a> · <a href="https://docs.unitedmobilerv.com/">Docs</a></footer>
   </div>
   <script>
     fetch('/api/auth/me', { credentials: 'same-origin' })
