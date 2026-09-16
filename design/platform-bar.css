@@ -1,5 +1,5 @@
 /* UMRT cross-platform bar — tokens sourced from design/theme.json.
-   ~600 bytes gzipped, no external requests, no framework. Safe on slow
+   Compact strip so every hub can jump to the others. Safe on slow
    cellular/satellite links (weBoost/Starlink users are the audience). */
 
 .umrt-platform-bar {
@@ -9,10 +9,11 @@
 }
 
 .umrt-platform-bar-inner {
-  width: min(100% - 48px, 1160px);
+  width: min(100% - 32px, 1160px);
   margin-inline: auto;
   display: flex;
-  gap: 20px;
+  align-items: center;
+  gap: 16px;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
@@ -41,7 +42,14 @@
   font-weight: 600;
 }
 
-@media (max-width: 480px) {
-  .umrt-platform-bar-inner { gap: 16px; }
+.umrt-platform-bar a.umrt-platform-text {
+  color: #C9972C;
+  margin-left: auto;
+  letter-spacing: 0.04em;
+}
+
+@media (max-width: 720px) {
+  .umrt-platform-bar a.umrt-platform-text { margin-left: 0; }
+  .umrt-platform-bar-inner { gap: 14px; }
   .umrt-platform-bar a { font-size: 11px; }
 }
