@@ -45,8 +45,21 @@
 
 const SESSION_COOKIE = 'umrt_session';
 const STATE_COOKIE = 'umrt_oauth_state';
+const NEXT_COOKIE = 'umrt_oauth_next';
 const SESSION_DAYS = 14;
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+// In-portal return paths after Google/Facebook. Anything else is dropped so
+// OAuth start cannot be used as an open redirect.
+const ALLOWED_NEXT = new Set([
+  '/',
+  '/book/',
+  '/track/',
+  '/account/',
+  '/directory/',
+  '/directory/apply.html',
+  '/community/',
+]);
 
 // True only for a real *.unitedmobilerv.com subdomain (forum., portal.,
 // shop., docs., ...) -- false for the bare apex (WordPress, a different
@@ -171,7 +184,35 @@ export function stateCookie(value, clear = false) {
   });
 }
 
-export { SESSION_COOKIE, STATE_COOKIE, SESSION_DAYS };
+export function nextCookie(value, clear = false) {
+  return cookieHeader(NEXT_COOKIE, value, {
+    maxAge: clear ? 0 : 600,
+    clear,
+  });
+}
+
+/**
+ * Allow only same-origin portal paths we actually hand people back to
+ * after sign-in (track, directory apply, book, …). Rejects protocol-
+ * relative, backslash, and off-allowlist values.
+ */
+export function safeNextPath(raw) {
+  if (!raw || typeof raw !== 'string') return '';
+  const trimmed = raw.trim();
+  if (!trimmed.startsWith('/') || trimmed.startsWith('//')) return '';
+  if (trimmed.includes('\\') || trimmed.includes('://') || /[\r\n\0]/.test(trimmed)) return '';
+  const path = trimmed.split('?')[0].split('#')[0];
+  return ALLOWED_NEXT.has(path) ? path : '';
+}
+
+export function authProviders(env) {
+  return {
+    google: Boolean(env && env.GOOGLE_CLIENT_ID),
+    facebook: Boolean(env && env.FACEBOOK_APP_ID && env.FACEBOOK_APP_SECRET),
+  };
+}
+
+export { SESSION_COOKIE, STATE_COOKIE, NEXT_COOKIE, SESSION_DAYS };
 
 /** Legacy (pre-Stage-3) session creation. Kept only so existing callers
  * that still reference it (none, after this stage) or tests exercising
@@ -312,6 +353,15 @@ export function json(data, status = 200, extraHeaders = {}) {
 export function originOf(request) {
   const url = new URL(request.url);
   return url.origin;
+}
+
+export function oauthErrorRedirect(origin, code, cookies = []) {
+  const headers = new Headers({
+    Location: `${origin}/account/?error=${encodeURIComponent(code)}`,
+    'Cache-Control': 'no-store',
+  });
+  for (const cookie of cookies) headers.append('Set-Cookie', cookie);
+  return new Response(null, { status: 302, headers });
 }
 
 // Admin gate for the internal /admin dashboard. Configure via the ADMIN_EMAILS

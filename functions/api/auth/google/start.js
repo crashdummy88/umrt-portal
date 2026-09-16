@@ -1,7 +1,8 @@
 import {
   randomToken,
   stateCookie,
-  STATE_COOKIE,
+  nextCookie,
+  safeNextPath,
   originOf,
   json,
 } from '../../../_lib/auth.js';
@@ -22,6 +23,7 @@ export async function onRequestGet(context) {
   const origin = originOf(request);
   const redirectUri = `${origin}/api/auth/callback/google`;
   const state = await randomToken(24);
+  const next = safeNextPath(new URL(request.url).searchParams.get('next'));
   const params = new URLSearchParams({
     client_id: clientId,
     redirect_uri: redirectUri,
@@ -32,12 +34,11 @@ export async function onRequestGet(context) {
     prompt: 'select_account',
   });
   const url = `https://accounts.google.com/o/oauth2/v2/auth?${params}`;
-  return new Response(null, {
-    status: 302,
-    headers: {
-      Location: url,
-      'Set-Cookie': stateCookie(state),
-      'Cache-Control': 'no-store',
-    },
+  const headers = new Headers({
+    Location: url,
+    'Cache-Control': 'no-store',
   });
+  headers.append('Set-Cookie', stateCookie(state));
+  headers.append('Set-Cookie', next ? nextCookie(next) : nextCookie('', true));
+  return new Response(null, { status: 302, headers });
 }

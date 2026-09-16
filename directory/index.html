@@ -3,16 +3,17 @@
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Tech & Vendor Directory · UMRT Portal</title>
+  <meta name="robots" content="noindex,follow">
   <meta name="description" content="RV techs and vendors United Mobile RV works with or refers overflow to.">
   <link rel="stylesheet" href="/assets/styles.css">
   <link rel="stylesheet" href="/design/platform-bar.css">
   <style>
-    .vendor-card{border:1px solid #e2e2e2;border-radius:8px;padding:16px;margin-bottom:12px}
-    .vendor-cat{display:inline-block;font-size:.75em;font-weight:700;text-transform:uppercase;padding:3px 10px;border-radius:999px;background:#F5F5F5;color:#1A1A1A;margin-bottom:6px}
-    .muted{color:#666}
-    .tabs{display:flex;gap:8px;margin-bottom:16px}
-    .tabs a{padding:6px 14px;border:1px solid #e2e2e2;border-radius:999px;text-decoration:none;color:#1A1A1A}
-    .tabs a[aria-current="page"]{background:#1A1A1A;color:#fff;border-color:#1A1A1A}
+    .vendor-card{border:1px solid var(--line);border-radius:8px;padding:16px;margin-bottom:12px;background:var(--panel)}
+    .vendor-cat{display:inline-block;font-size:.75em;font-weight:700;text-transform:uppercase;padding:3px 10px;border-radius:999px;background:rgba(201,151,44,.16);color:var(--gold);margin-bottom:6px}
+    .muted{color:var(--dg)}
+    .tabs{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+    .tabs a{padding:6px 14px;border:1px solid var(--line);border-radius:999px;text-decoration:none;color:var(--dg)}
+    .tabs a[aria-current="page"]{background:var(--gold);color:var(--black);border-color:var(--gold);font-weight:700}
   </style>
 </head>
 <body>
@@ -30,7 +31,7 @@
   <div class="wrap">
     <header>
       <a class="brand" href="/">United Mobile <span>RV</span></a>
-      <nav aria-label="Portal navigation"><a href="/">Home</a><a href="/book/">Request</a><a href="/track/">Track</a><a href="/directory/" aria-current="page">Directory</a><a href="https://shop.unitedmobilerv.com/">Shop</a><a href="/account/">Account</a></nav>
+      <nav aria-label="Portal navigation"><a href="/">Home</a><a href="/book/">Request</a><a href="/track/">Track</a><a href="/directory/" aria-current="page">Directory</a><a href="https://shop.unitedmobilerv.com/">Shop</a><a href="/account/">Account</a><a href="/community/">Community</a></nav>
       <div class="nav-cta" aria-label="Contact">
         <a class="btn btn-ghost" href="tel:+16166065277">Call (616) 606-5277</a>
         <a class="btn btn-gold" href="sms:+16166065277">Text Now</a>
