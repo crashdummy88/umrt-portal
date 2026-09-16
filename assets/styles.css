@@ -12,6 +12,6 @@ label{display:block;font-size:.85rem;font-weight:600;margin:.75rem 0 .35rem}inpu
 @media(max-width:650px){.portal-grid{grid-template-columns:1fr}.account-hero{align-items:flex-start;flex-wrap:wrap}.account-hero .btn{margin-left:auto}.portal-help{align-items:flex-start;flex-direction:column}.portal-help .btn{width:100%}}@media(max-width:480px){.wrap{padding-left:.85rem;padding-right:.85rem}nav{width:100%;justify-content:flex-start}.account-avatar{width:48px;height:48px;flex-basis:48px}.auth-trust{display:block}.auth-trust span{display:block;margin:.25rem 0}}
 
 /* Sticky mobile action bar -- added 2026-09-16, matches mothership pattern */
-.mobile-bar{display:none;position:fixed;bottom:0;left:0;right:0;z-index:200;background:rgba(17,17,17,0.98);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-top:1px solid var(--line);padding:10px 16px calc(10px + env(safe-area-inset-bottom));gap:10px;box-shadow:0 -8px 24px rgba(0,0,0,0.35)}
-.mobile-bar .btn{flex:1;min-height:44px;text-align:center}
-@media (max-width:900px){.mobile-bar{display:flex}body{padding-bottom:72px}}
+.mobile-bar{display:none;position:fixed;bottom:0;left:0;right:0;z-index:200;background:#1A1A1A;-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-top:1px solid var(--line);padding:10px 16px calc(10px + env(safe-area-inset-bottom));gap:10px;box-shadow:0 -8px 24px rgba(0,0,0,0.35)}
+.mobile-bar .btn{flex:1;min-height:44px;text-align:center;line-height:1.2}
+@media (max-width:900px){.mobile-bar{display:flex}body{padding-bottom:88px}}
