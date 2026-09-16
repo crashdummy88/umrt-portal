@@ -5,6 +5,7 @@
   <title>Tech & Vendor Directory · UMRT Portal</title>
   <meta name="description" content="RV techs and vendors United Mobile RV works with or refers overflow to.">
   <link rel="stylesheet" href="/assets/styles.css">
+  <link rel="stylesheet" href="/design/platform-bar.css">
   <style>
     .vendor-card{border:1px solid #e2e2e2;border-radius:8px;padding:16px;margin-bottom:12px}
     .vendor-cat{display:inline-block;font-size:.75em;font-weight:700;text-transform:uppercase;padding:3px 10px;border-radius:999px;background:#F5F5F5;color:#1A1A1A;margin-bottom:6px}
@@ -15,10 +16,21 @@
   </style>
 </head>
 <body>
+  <div class="umrt-platform-bar" role="navigation" aria-label="UMRT properties">
+    <div class="umrt-platform-bar-inner">
+      <a href="https://unitedmobilerv.com/" data-platform-link="hub">Main Hub</a>
+      <a href="https://forum.unitedmobilerv.com/" data-platform-link="forum">Forum</a>
+      <a href="https://software.unitedmobilerv.com/" data-platform-link="software">Software</a>
+      <a href="https://status.unitedmobilerv.com/" data-platform-link="status">Status</a>
+      <a href="https://portal.unitedmobilerv.com/" data-platform-link="portal" class="is-current">Portal</a>
+      <a href="https://shop.unitedmobilerv.com/" data-platform-link="shop">Shop</a>
+      <a href="https://docs.unitedmobilerv.com/" data-platform-link="docs">Docs</a>
+    </div>
+  </div>
   <div class="wrap">
     <header>
       <a class="brand" href="/">United Mobile <span>RV</span></a>
-      <nav aria-label="Portal navigation"><a href="/">Home</a><a href="/book/">Book</a><a href="/track/">Track</a><a href="/directory/" aria-current="page">Directory</a><a href="https://shop.unitedmobilerv.com/">Shop</a><a href="/account/">Account</a></nav>
+      <nav aria-label="Portal navigation"><a href="/">Home</a><a href="https://book.unitedmobilerv.com/">Book</a><a href="/book/">Request</a><a href="/track/">Track</a><a href="/directory/" aria-current="page">Directory</a><a href="https://shop.unitedmobilerv.com/">Shop</a><a href="/account/">Account</a></nav>
     </header>
     <main>
       <h1>Tech &amp; vendor directory</h1>
@@ -32,7 +44,7 @@
       <p id="empty-note" class="muted" hidden>No listings yet in this category.</p>
       <p id="loading" class="muted">Loading&hellip;</p>
     </main>
-    <footer>United Mobile RV LLC</footer>
+    <footer>United Mobile RV LLC · <a href="https://unitedmobilerv.com/">Main Hub</a> · <a href="https://forum.unitedmobilerv.com/">Forum</a> · <a href="https://software.unitedmobilerv.com/">Software</a> · <a href="https://status.unitedmobilerv.com/">Status</a> · <a href="https://portal.unitedmobilerv.com/">Portal</a> · <a href="https://shop.unitedmobilerv.com/">Shop</a> · <a href="https://docs.unitedmobilerv.com/">Docs</a></footer>
   </div>
   <script>
     var params = new URLSearchParams(location.search);
