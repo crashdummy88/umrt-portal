@@ -38,4 +38,4 @@ Cookie: `umrt_session` — HttpOnly, Secure, SameSite=Lax.
 ## Sibling tips
 
 - Pay: `umrt-pay.pages.dev`
-- Community: `umrt-community.pages.dev` (linked from `/community/`)
+- Community: live door is `https://forum.unitedmobilerv.com/` (portal `/community/` redirects there; do not link `umrt-community.pages.dev`)

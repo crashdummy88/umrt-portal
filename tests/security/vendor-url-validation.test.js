@@ -55,21 +55,18 @@ test('sanitizeHttpUrl: garbage/malformed strings are rejected, not silently pass
   assert.equal(result.ok, false);
 });
 
-// ---- Unit test: the client-side render-time check, extracted from the
-// actual shipped HTML so this catches a future edit that removes it ----
+// ---- Public directory is not a live listing renderer while empty ----
+// The old page fetched /api/vendors and wrote website hrefs into the DOM.
+// That sink is gone: the page is a noindex "not live yet" stub. Server-side
+// sanitizeHttpUrl + POST /api/vendors remain the storage-boundary lock.
 
-test('directory/index.html: isSafeHttpUrl (as actually shipped) rejects malicious schemes and accepts http(s)', () => {
+test('directory/index.html: not a live vendor-link renderer', () => {
   const html = fs.readFileSync(new URL('../../directory/index.html', import.meta.url), 'utf8');
-  const match = html.match(/function isSafeHttpUrl\(s\)\{[\s\S]*?\n\s*\}/);
-  assert.ok(match, 'isSafeHttpUrl() not found in directory/index.html -- was it removed or renamed?');
-  // eslint-disable-next-line no-new-func -- evaluating the real shipped function body, not arbitrary input
-  const isSafeHttpUrl = new Function(`return (${match[0]})`)();
-  for (const bad of MALICIOUS_SCHEMES) {
-    assert.equal(isSafeHttpUrl(bad), false, `expected rejection for: ${bad}`);
-  }
-  for (const good of VALID_URLS) {
-    assert.equal(isSafeHttpUrl(good), true, `expected acceptance for: ${good}`);
-  }
+  assert.match(html, /noindex/);
+  assert.match(html, /not live yet/i);
+  assert.ok(!/\/api\/vendors/.test(html), 'stub must not fetch or render /api/vendors');
+  assert.ok(!/function isSafeHttpUrl/.test(html), 'no client vendor-href renderer to keep in sync');
+  assert.ok(!/apply to be listed/i.test(html), 'must not look like a live apply marketplace');
 });
 
 // ---- Integration test: the real POST /api/vendors handler end to end ----

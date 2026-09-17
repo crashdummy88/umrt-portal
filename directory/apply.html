@@ -4,9 +4,9 @@
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Apply to the Directory · UMRT Portal</title>
   <meta name="robots" content="noindex,follow">
+  <meta name="description" content="Directory applications are not open. The United Mobile RV tech and vendor directory is not live yet.">
   <link rel="stylesheet" href="/assets/styles.css">
   <link rel="stylesheet" href="/design/platform-bar.css">
-  <style>.muted{color:#666} label{display:block;margin-top:12px;font-weight:600} input,select,textarea{width:100%;padding:8px;border:1px solid #ccc;border-radius:6px;font:inherit} textarea{min-height:80px}</style>
 </head>
 <body>
   <div class="umrt-platform-bar" role="navigation" aria-label="UMRT properties">
@@ -23,7 +23,7 @@
   <div class="wrap">
     <header>
       <a class="brand" href="/">United Mobile <span>RV</span></a>
-      <nav aria-label="Portal navigation"><a href="/">Home</a><a href="/directory/">Directory</a><a href="/account/">Account</a></nav>
+      <nav aria-label="Portal navigation"><a href="/">Home</a><a href="https://shop.unitedmobilerv.com/">Shop</a><a href="/account/">Account</a><a href="https://forum.unitedmobilerv.com/">Forum</a></nav>
       <div class="nav-cta" aria-label="Contact">
         <a class="btn btn-ghost" href="tel:+16166065277">Call (616) 606-5277</a>
         <a class="btn btn-gold" href="sms:+16166065277">Text Now</a>
@@ -31,50 +31,18 @@
       </div>
     </header>
     <main>
-      <h1>Apply to the directory</h1>
-      <p class="lede">$40/year membership. Our team reviews every application by hand before it's approved or billed -- nothing is charged automatically by submitting this form.</p>
-
-      <div id="signed-out" hidden>
-        <p class="muted">Sign in first to apply.</p>
-        <a class="btn" href="/account/">Sign in</a>
+      <div class="eyebrow">Not live yet</div>
+      <h1>Directory applications are not open</h1>
+      <p class="lede">The tech and vendor directory is not live yet. There is no listing form, membership, or public directory to apply to right now.</p>
+      <div class="card">
+        <h2>Want to talk anyway?</h2>
+        <p>Text Now with your business and trade. Do not send payment — nothing is billed from this page.</p>
+        <p style="margin-top:1rem">
+          <a class="btn" href="sms:+16166065277">Text Now</a>
+          <a class="btn btn-ghost" href="https://united-mobile-rv-llc.square.site/">Book</a>
+          <a class="btn btn-ghost" href="/">Portal home</a>
+        </p>
       </div>
-
-      <div id="already-applied" hidden>
-        <p class="muted">You've already applied. Our team will follow up once it's reviewed.</p>
-      </div>
-
-      <form id="apply-form" hidden>
-        <label for="businessName">Business name</label>
-        <input id="businessName" required>
-
-        <label for="category">Category</label>
-        <select id="category" required>
-          <option value="">Choose one</option>
-          <option value="tech">Tech (I do RV repair/install work)</option>
-          <option value="vendor">Vendor (I supply parts/equipment)</option>
-        </select>
-
-        <label for="tradeFocus">Trade focus</label>
-        <input id="tradeFocus" placeholder="e.g. Victron/solar install, lithium battery supplier">
-
-        <label for="description">Description</label>
-        <textarea id="description"></textarea>
-
-        <label for="contactEmail">Contact email</label>
-        <input id="contactEmail" type="email" required>
-
-        <label for="contactPhone">Contact phone</label>
-        <input id="contactPhone" type="tel">
-
-        <label for="website">Website</label>
-        <input id="website" type="url" placeholder="https://">
-
-        <label for="serviceArea">Service area</label>
-        <input id="serviceArea" placeholder="e.g. Michigan, Great Lakes region">
-
-        <p style="margin-top:16px"><button class="btn" type="submit">Submit application</button></p>
-        <p id="status" class="muted" role="status"></p>
-      </form>
     </main>
     <footer>United Mobile RV LLC · <a href="tel:+16166065277">(616) 606-5277</a> · <a href="sms:+16166065277">Text Now</a> · <a href="https://united-mobile-rv-llc.square.site/">Book</a> · <a href="https://unitedmobilerv.com/">Main Hub</a> · <a href="https://forum.unitedmobilerv.com/">Forum</a> · <a href="https://software.unitedmobilerv.com/">Software</a> · <a href="https://status.unitedmobilerv.com/">Status</a> · <a href="https://shop.unitedmobilerv.com/">Shop</a> · <a href="https://docs.unitedmobilerv.com/">Docs</a></footer>
   </div>
@@ -83,55 +51,5 @@
     <a class="btn btn-gold" href="sms:+16166065277">Text Now</a>
     <a class="btn btn-ghost" href="https://united-mobile-rv-llc.square.site/" target="_blank" rel="noopener">Book</a>
   </div>
-  <script>
-    fetch('/api/auth/me', { credentials: 'same-origin' })
-      .then(function(r){ return r.ok ? r.json() : null; })
-      .then(function(data){
-        if (!data || !data.user) {
-          document.getElementById('signed-out').hidden = false;
-          return;
-        }
-        document.getElementById('contactEmail').value = data.user.email || '';
-        return fetch('/api/vendors/mine', { credentials: 'same-origin' })
-          .then(function(r){ return r.ok ? r.json() : { vendor: null }; })
-          .then(function(res){
-            if (res.vendor) {
-              document.getElementById('already-applied').hidden = false;
-            } else {
-              document.getElementById('apply-form').hidden = false;
-            }
-          });
-      });
-
-    document.getElementById('apply-form').addEventListener('submit', function(e){
-      e.preventDefault();
-      var statusEl = document.getElementById('status');
-      statusEl.textContent = 'Submitting…';
-      fetch('/api/vendors', {
-        method: 'POST', credentials: 'same-origin',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          businessName: document.getElementById('businessName').value,
-          category: document.getElementById('category').value,
-          tradeFocus: document.getElementById('tradeFocus').value,
-          description: document.getElementById('description').value,
-          contactEmail: document.getElementById('contactEmail').value,
-          contactPhone: document.getElementById('contactPhone').value,
-          website: document.getElementById('website').value,
-          serviceArea: document.getElementById('serviceArea').value,
-        }),
-      })
-        .then(function(r){ return r.json().then(function(d){ return { ok: r.ok, data: d }; }); })
-        .then(function(res){
-          if (res.ok) {
-            statusEl.textContent = res.data.message || 'Application received.';
-            document.getElementById('apply-form').hidden = true;
-          } else {
-            statusEl.textContent = res.data.message || res.data.error || 'Could not submit. Please try again.';
-          }
-        })
-        .catch(function(){ statusEl.textContent = 'Network error. Please try again.'; });
-    });
-  </script>
 </body>
 </html>
