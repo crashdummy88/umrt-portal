@@ -3,7 +3,8 @@
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Tech & Vendor Directory · UMRT Portal</title>
-  <meta name="description" content="RV techs and vendors United Mobile RV works with or refers overflow to.">
+  <meta name="robots" content="noindex,follow">
+  <meta name="description" content="The United Mobile RV tech and vendor directory is not live yet.">
   <link rel="stylesheet" href="/assets/styles.css">
   <link rel="stylesheet" href="/design/platform-bar.css">
   <style>
@@ -30,7 +31,7 @@
   <div class="wrap">
     <header>
       <a class="brand" href="/">United Mobile <span>RV</span></a>
-      <nav aria-label="Portal navigation"><a href="/">Home</a><a href="/book/">Request</a><a href="/track/">Track</a><a href="/directory/" aria-current="page">Directory</a><a href="https://shop.unitedmobilerv.com/">Shop</a><a href="/account/">Account</a></nav>
+      <nav aria-label="Portal navigation"><a href="/">Home</a><a href="/book/">Request</a><a href="/track/">Track</a><a href="https://shop.unitedmobilerv.com/">Shop</a><a href="/account/">Account</a><a href="https://forum.unitedmobilerv.com/">Community</a></nav>
       <div class="nav-cta" aria-label="Contact">
         <a class="btn btn-ghost" href="tel:+16166065277">Call (616) 606-5277</a>
         <a class="btn btn-gold" href="sms:+16166065277">Text Now</a>
@@ -39,15 +40,16 @@
     </header>
     <main>
       <h1>Tech &amp; vendor directory</h1>
-      <p class="lede">RV techs and vendors we work with or refer overflow jobs to. Listed businesses pay a $40/year membership -- <a href="/directory/apply.html">apply to be listed</a>.</p>
-      <div class="tabs">
+      <p class="lede">Not live. There are no public tech or vendor listings on this portal yet.</p>
+      <p class="note">This page is not a live directory. For service, <a href="sms:+16166065277">Text Now</a> or <a href="https://united-mobile-rv-llc.square.site/">Book</a>. Invited to apply for a future listing? <a href="/directory/apply.html">Use the application form</a>.</p>
+      <div class="tabs" id="tabs" hidden>
         <a href="?category=" id="tab-all">All</a>
         <a href="?category=tech" id="tab-tech">Techs</a>
         <a href="?category=vendor" id="tab-vendor">Vendors</a>
       </div>
       <div id="list"></div>
-      <p id="empty-note" class="muted" hidden>No listings yet in this category.</p>
-      <p id="loading" class="muted">Loading&hellip;</p>
+      <p id="empty-note">Not live. No public listings in this category.</p>
+      <p id="loading" class="muted">Checking for listings&hellip;</p>
     </main>
     <footer>United Mobile RV LLC · <a href="tel:+16166065277">(616) 606-5277</a> · <a href="sms:+16166065277">Text Now</a> · <a href="https://united-mobile-rv-llc.square.site/">Book</a> · <a href="https://unitedmobilerv.com/">Main Hub</a> · <a href="https://forum.unitedmobilerv.com/">Forum</a> · <a href="https://software.unitedmobilerv.com/">Software</a> · <a href="https://status.unitedmobilerv.com/">Status</a> · <a href="https://shop.unitedmobilerv.com/">Shop</a> · <a href="https://docs.unitedmobilerv.com/">Docs</a></footer>
   </div>
@@ -84,6 +86,8 @@
           document.getElementById('empty-note').hidden = false;
           return;
         }
+        document.getElementById('empty-note').hidden = true;
+        document.getElementById('tabs').hidden = false;
         list.innerHTML = vendors.map(function(v){
           return '<div class="vendor-card">' +
             '<span class="vendor-cat">' + esc(v.category) + '</span>' +
