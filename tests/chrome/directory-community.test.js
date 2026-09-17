@@ -90,6 +90,7 @@ test('directory listing is noindex with not-live copy', () => {
   assert.match(html, /<meta name="robots" content="noindex,follow">/);
   assert.match(html, /Not live/i);
   assert.match(html, /no public/i);
+  assert.match(html, /\.tabs\[hidden\]\{display:none\}/);
 });
 
 test('directory apply is noindex and says the directory is not live', () => {

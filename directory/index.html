@@ -12,6 +12,7 @@
     .vendor-cat{display:inline-block;font-size:.75em;font-weight:700;text-transform:uppercase;padding:3px 10px;border-radius:999px;background:#F5F5F5;color:#1A1A1A;margin-bottom:6px}
     .muted{color:#666}
     .tabs{display:flex;gap:8px;margin-bottom:16px}
+    .tabs[hidden]{display:none}
     .tabs a{padding:6px 14px;border:1px solid #e2e2e2;border-radius:999px;text-decoration:none;color:#1A1A1A}
     .tabs a[aria-current="page"]{background:#1A1A1A;color:#fff;border-color:#1A1A1A}
   </style>
@@ -100,7 +101,7 @@
         }).join('');
       })
       .catch(function(){
-        document.getElementById('loading').textContent = 'Could not load the directory right now.';
+        document.getElementById('loading').hidden = true;
       });
   </script>
 </body>
