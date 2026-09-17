@@ -5,3 +5,9 @@
   Permissions-Policy: interest-cohort=()
   Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
   Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; object-src 'none'
+
+/directory/*
+  X-Robots-Tag: noindex, follow
+
+/community/*
+  X-Robots-Tag: noindex, follow
