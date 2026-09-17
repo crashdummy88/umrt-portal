@@ -18,4 +18,4 @@ Redirect URI: `https://umrt-portal.pages.dev/api/auth/google/callback`
 See `CF_PAGES.md` for Pages + D1 setup.
 
 Text Now: sms:+16166065277. Listed: (616) 606-5277 (tel:+16166065277 for older clients). Starlink installs only — never Certified.
-Payments: sibling `umrt-pay`. Community: `umrt-community`.
+Payments: sibling `umrt-pay`. Community door: https://forum.unitedmobilerv.com/.

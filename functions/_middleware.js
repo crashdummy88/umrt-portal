@@ -15,7 +15,20 @@ import { resolveCentralIdentity } from './_lib/central-identity.js';
  * rather than as an afterthought once something does. Companion to the
  * identical stripping logic in united-mobile-rv/functions/_middleware.js.
  */
+// Empty /community/ stub is not a product. Forum is the community door.
+// 301 here (and in `_redirects`) so leftover URLs never render the stub.
+const FORUM = 'https://forum.unitedmobilerv.com/';
+
+function isCommunityStubPath(pathname) {
+  return pathname === '/community' || pathname === '/community/';
+}
+
 export async function onRequest(context) {
+  const incoming = new URL(context.request.url);
+  if (isCommunityStubPath(incoming.pathname)) {
+    return Response.redirect(FORUM, 301);
+  }
+
   const strippedHeaders = new Headers(context.request.headers);
   strippedHeaders.delete('X-User-Id');
   strippedHeaders.delete('X-User-Role');
