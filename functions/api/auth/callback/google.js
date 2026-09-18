@@ -8,6 +8,7 @@ import {
   json,
 } from '../../../_lib/auth.js';
 import { createSsoCookie } from '../../../_lib/sso.js';
+import { nextCookie, nextFromCookies, oauthFail } from '../../../_lib/oauth-next.js';
 
 export async function onRequestGet(context) {
   const { env, request } = context;
@@ -16,21 +17,17 @@ export async function onRequestGet(context) {
   const state = url.searchParams.get('state');
   const err = url.searchParams.get('error');
   const origin = originOf(request);
+  const cookies = parseCookies(request);
   const clearState = stateCookie('', true);
+  const clearNext = nextCookie('', true);
+  const next = nextFromCookies(cookies);
 
   if (err) {
-    return new Response(null, {
-      status: 302,
-      headers: { Location: `${origin}/account/?error=oauth`, 'Set-Cookie': clearState },
-    });
+    return oauthFail(origin, 'oauth', [clearState, clearNext]);
   }
 
-  const cookies = parseCookies(request);
   if (!code || !state || !cookies[STATE_COOKIE] || cookies[STATE_COOKIE] !== state) {
-    return new Response(null, {
-      status: 302,
-      headers: { Location: `${origin}/account/?error=state`, 'Set-Cookie': clearState },
-    });
+    return oauthFail(origin, 'state', [clearState, clearNext]);
   }
 
   const clientId = env.GOOGLE_CLIENT_ID;
@@ -54,27 +51,18 @@ export async function onRequestGet(context) {
     }),
   });
   if (!tokenRes.ok) {
-    return new Response(null, {
-      status: 302,
-      headers: { Location: `${origin}/account/?error=token`, 'Set-Cookie': clearState },
-    });
+    return oauthFail(origin, 'token', [clearState, clearNext]);
   }
   const tokens = await tokenRes.json();
   const infoRes = await fetch('https://openidconnect.googleapis.com/v1/userinfo', {
     headers: { Authorization: `Bearer ${tokens.access_token}` },
   });
   if (!infoRes.ok) {
-    return new Response(null, {
-      status: 302,
-      headers: { Location: `${origin}/account/?error=userinfo`, 'Set-Cookie': clearState },
-    });
+    return oauthFail(origin, 'userinfo', [clearState, clearNext]);
   }
   const info = await infoRes.json();
   if (!info.email || !info.sub) {
-    return new Response(null, {
-      status: 302,
-      headers: { Location: `${origin}/account/?error=email`, 'Set-Cookie': clearState },
-    });
+    return oauthFail(origin, 'email', [clearState, clearNext]);
   }
 
   const userId = await upsertOAuthUser(env.DB, {
@@ -87,11 +75,12 @@ export async function onRequestGet(context) {
   const sessionCookieValue = await createCentralSessionCookie(userId, env, request);
 
   const headers = new Headers({
-    Location: `${origin}/account/`,
+    Location: next || `${origin}/account/`,
     'Cache-Control': 'no-store',
   });
   headers.append('Set-Cookie', sessionCookieValue);
   headers.append('Set-Cookie', clearState);
+  headers.append('Set-Cookie', clearNext);
 
   // Cross-subdomain SSO recognition cookie, additive -- display-only on
   // forum/docs, never grants portal account access by itself.

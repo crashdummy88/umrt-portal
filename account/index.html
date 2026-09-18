@@ -115,6 +115,13 @@
     var nameEl = document.getElementById('profile-name');
     var emailEl = document.getElementById('profile-email');
     var fbWrap = document.getElementById('fb-wrap');
+    var nextParam = new URLSearchParams(location.search).get('next');
+    if (nextParam) {
+      var googleBtn = document.querySelector('a.btn-google');
+      if (googleBtn) googleBtn.href = '/api/auth/google/start?next=' + encodeURIComponent(nextParam);
+      var fbBtn = document.getElementById('fb-btn');
+      if (fbBtn) fbBtn.href = '/api/auth/facebook/start?next=' + encodeURIComponent(nextParam);
+    }
 
     function show(el) { el.hidden = false; }
     function hide(el) { el.hidden = true; }
@@ -137,6 +144,10 @@
           var u = data.user;
           nameEl.textContent = u.name || 'UMRT member';
           emailEl.textContent = u.email || 'Authenticated account';
+          if (nextParam) {
+            location.replace('/api/auth/next?to=' + encodeURIComponent(nextParam));
+            return;
+          }
           show(inn);
         } else {
           show(out);

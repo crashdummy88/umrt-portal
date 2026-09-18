@@ -1,11 +1,11 @@
 import {
   randomToken,
   stateCookie,
-  STATE_COOKIE,
   originOf,
   json,
 } from '../../../_lib/auth.js';
 import { checkRateLimit } from '../../../_lib/rate-limit.js';
+import { nextCookie, nextFromRequest } from '../../../_lib/oauth-next.js';
 
 export async function onRequestGet(context) {
   const { env, request } = context;
@@ -32,12 +32,12 @@ export async function onRequestGet(context) {
     prompt: 'select_account',
   });
   const url = `https://accounts.google.com/o/oauth2/v2/auth?${params}`;
-  return new Response(null, {
-    status: 302,
-    headers: {
-      Location: url,
-      'Set-Cookie': stateCookie(state),
-      'Cache-Control': 'no-store',
-    },
+  const next = nextFromRequest(request);
+  const headers = new Headers({
+    Location: url,
+    'Cache-Control': 'no-store',
   });
+  headers.append('Set-Cookie', stateCookie(state));
+  headers.append('Set-Cookie', next ? nextCookie(next) : nextCookie('', true));
+  return new Response(null, { status: 302, headers });
 }
