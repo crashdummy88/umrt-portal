@@ -1,0 +1,48 @@
+# Dedicated Worker: Square → structured D1 log → Matt notify stub + Claude read.
+# Same account / workers.dev pattern as united-mobile-rv/workers/square-inventory-cron.
+# Separate from the umrt-portal Pages project on purpose — this is the
+# Square webhook subscription target. Portal consumes the log later.
+#
+# Staging/PR first. Do NOT enable a production Square webhook subscription
+# until Matt says so. Do not invent catalog IDs. Book land stays
+# https://united-mobile-rv-llc.square.site/
+#
+# Secrets — names only, set with wrangler secret put (never commit values):
+#   wrangler secret put SQUARE_WEBHOOK_SIGNATURE_KEY
+#   wrangler secret put SQUARE_WEBHOOK_NOTIFICATION_URL
+#   wrangler secret put CLAUDE_EVENTS_TOKEN
+#   wrangler secret put MATT_NOTIFY_PHONE          # optional; defaults +16166065277
+#   wrangler secret put MATT_NOTIFY_EMAIL
+#   wrangler secret put TWILIO_ACCOUNT_SID
+#   wrangler secret put TWILIO_AUTH_TOKEN
+#   wrangler secret put TWILIO_FROM_NUMBER
+#   wrangler secret put RESEND_API_KEY
+#   wrangler secret put RESEND_FROM_EMAIL
+
+name = "umrt-square-events"
+main = "src/index.js"
+compatibility_date = "2026-09-18"
+account_id = "662952da5de37843cb132fd1e79a9cb7"
+workers_dev = true
+
+[[d1_databases]]
+binding = "DB"
+database_name = "umrt-square-events"
+# Replace after: wrangler d1 create umrt-square-events
+database_id = "00000000-0000-0000-0000-000000000000"
+
+[vars]
+ENVIRONMENT = "production"
+WORKER_NAME = "umrt-square-events"
+
+# Staging Worker: umrt-square-events-staging.mattc2896.workers.dev
+# Use a Square SANDBOX subscription against this URL. Not production.
+[env.staging]
+name = "umrt-square-events-staging"
+workers_dev = true
+vars = { ENVIRONMENT = "staging", WORKER_NAME = "umrt-square-events-staging" }
+
+[[env.staging.d1_databases]]
+binding = "DB"
+database_name = "umrt-square-events-staging"
+database_id = "00000000-0000-0000-0000-000000000001"

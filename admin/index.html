@@ -74,6 +74,12 @@
       <div class="filters" id="filters"></div>
       <div id="job-list"></div>
       <p id="empty-note" class="muted" hidden>No jobs match this filter.</p>
+
+      <h2 class="h2" style="margin-top:2.2rem">Square events</h2>
+      <p class="lede">Booking, invoice, and payment events from Square. Same feed Claude reads at <code>/api/admin/events</code>.</p>
+      <p id="events-meta" class="note"></p>
+      <div id="event-list"></div>
+      <p id="events-empty" class="muted" hidden>No Square events yet. Point Square Dashboard webhooks at <code>/api/webhooks/square</code>.</p>
     </div>
   </main>
   <footer>United Mobile RV LLC · Internal use only</footer>
@@ -196,6 +202,53 @@
     });
   }
 
+  function moneyEvent(cents, currency) {
+    if (cents == null) return '';
+    return (currency || 'USD') + ' ' + (Number(cents) / 100).toFixed(2);
+  }
+
+  function renderEvents(payload) {
+    var list = document.getElementById('event-list');
+    var empty = document.getElementById('events-empty');
+    var meta = document.getElementById('events-meta');
+    var events = (payload && payload.events) || [];
+    var hook = (payload && payload.webhook) || {};
+    var notify = (payload && payload.notify) || {};
+    meta.textContent = 'Webhook ' + (hook.signature_configured ? 'signature configured' : 'signature not set') +
+      ' · Notify ' + (notify.configured ? 'provider configured' : 'stubbed (no Twilio/Resend env)') +
+      ' · Claude token ' + (hook.claude_token_configured ? 'set' : 'unset');
+    empty.hidden = !!events.length;
+    list.innerHTML = '';
+    events.forEach(function (ev) {
+      var el = document.createElement('div');
+      el.className = 'job';
+      el.innerHTML = '' +
+        '<div class="job-top"><div>' +
+          '<span class="job-status">' + esc(ev.topic || 'event') + '</span>' +
+          '<span class="' + (ev.notify_status === 'sent' ? 'paid-pill' : 'unpaid-pill') + '">' + esc(ev.notify_status || 'pending') + '</span>' +
+          '<h3>' + esc(ev.event_type || 'square event') + '</h3>' +
+          '<p class="meta">' + esc(ev.summary || '') + '</p>' +
+          '<p class="contact">' +
+            esc(ev.object_id || '') +
+            (ev.job_id ? ' · job ' + esc(ev.job_id) : '') +
+            (ev.amount_cents != null ? ' · ' + esc(moneyEvent(ev.amount_cents, ev.currency)) : '') +
+          '</p>' +
+          '<p class="meta">' + esc(fmtDate(ev.received_at || ev.square_created_at)) + '</p>' +
+        '</div></div>';
+      list.appendChild(el);
+    });
+  }
+
+  function loadEvents() {
+    fetch('/api/admin/events?limit=25', { credentials: 'include' })
+      .then(function (r) { return r.json().then(function (d) { return { status: r.status, d: d }; }); })
+      .then(function (res) {
+        if (res.status === 401) return;
+        renderEvents(res.d);
+      })
+      .catch(function () {});
+  }
+
   function loadJobs() {
     renderFilters();
     var qs = currentFilter ? ('?status=' + encodeURIComponent(currentFilter)) : '';
@@ -206,6 +259,7 @@
         jobsCache = res.d.jobs || [];
         renderStats(res.d.stats);
         renderJobs(jobsCache);
+        loadEvents();
       });
   }
 

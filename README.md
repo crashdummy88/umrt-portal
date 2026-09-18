@@ -11,9 +11,11 @@ GitHub → Cloudflare `umrt-portal.pages.dev`. Domain HOLD — pages.dev only. P
 - `SESSION_SECRET`
 - Optional: `FACEBOOK_APP_ID`, `FACEBOOK_APP_SECRET`
 
-D1 binding name: `DB`. Migration: `migrations/0001_init.sql`.
+D1 binding name: `DB`. Migrations: `migrations/0001_init.sql` … `0008_square_events.sql`.
 
 Redirect URI: `https://umrt-portal.pages.dev/api/auth/google/callback`
+
+Square → Matt + Claude: dedicated Worker `umrt-square-events` (`workers/umrt-square-events/`, `*.mattc2896.workers.dev`). Portal consumes that D1 log later. See `workers/umrt-square-events/README.md` and `SQUARE_EVENTS.md`. Book land stays `https://united-mobile-rv-llc.square.site/`.
 
 See `CF_PAGES.md` for Pages + D1 setup.
 
