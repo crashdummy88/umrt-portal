@@ -14,6 +14,20 @@ label{display:block;font-size:.85rem;font-weight:600;margin:.75rem 0 .35rem}inpu
 .msg{font-size:.9rem;margin:.75rem 0}.msg.err{color:var(--err)}.msg.ok{color:var(--ok)}
 @media(max-width:650px){.portal-grid{grid-template-columns:1fr}.account-hero{align-items:flex-start;flex-wrap:wrap}.account-hero .btn{margin-left:auto}.portal-help{align-items:flex-start;flex-direction:column}.portal-help .btn{width:100%}}@media(max-width:480px){.wrap{padding-left:.85rem;padding-right:.85rem}nav{width:100%;justify-content:flex-start}.account-avatar{width:48px;height:48px;flex-basis:48px}.auth-trust{display:block}.auth-trust span{display:block;margin:.25rem 0}}
 
+/* Track job cards — dark panel, not a light sheet on black. */
+.job-card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.1rem 1.15rem;margin:1rem 0}
+.job-card h3{margin:.5rem 0 0;color:var(--white);font-size:1.05rem}
+.job-card .muted{color:var(--dg)}
+.job-status{display:inline-block;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.03em;padding:3px 10px;border-radius:999px;background:rgba(255,255,255,.08);color:var(--white)}
+.job-status.requested{background:#EFE3C0;color:#7A5A00}
+.job-status.scheduled{background:#CFE8FF;color:#0A4A8A}
+.job-status.in_progress{background:#D8E8D2;color:#2C6B1F}
+.job-status.completed{background:#DCF5E0;color:#1B7A34}
+.job-status.cancelled{background:#F3D6D6;color:#8A1F1F}
+.invoice-status{display:inline-block;font-size:.72rem;font-weight:700;padding:3px 10px;border-radius:999px;margin-left:.35rem;background:rgba(201,151,44,.16);color:var(--gold)}
+.invoice-status.paid{background:rgba(76,175,80,.16);color:var(--ok)}
+.job-actions{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.75rem}
+
 /* Sticky mobile action bar — same 3 convert buttons as .nav-cta */
 .mobile-bar{display:none;position:fixed;bottom:0;left:0;right:0;z-index:200;background:#1A1A1A;-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-top:1px solid var(--line);padding:10px 16px calc(10px + env(safe-area-inset-bottom));gap:8px;box-shadow:0 -8px 24px rgba(0,0,0,0.35)}
 .mobile-bar .btn{flex:1;min-height:44px;text-align:center;line-height:1.15;font-size:.78rem;padding:.55rem .35rem}

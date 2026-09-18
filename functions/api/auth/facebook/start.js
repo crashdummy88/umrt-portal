@@ -1,5 +1,6 @@
 import { randomToken, stateCookie, originOf, json } from '../../../_lib/auth.js';
 import { checkRateLimit } from '../../../_lib/rate-limit.js';
+import { nextCookie, nextFromRequest } from '../../../_lib/oauth-next.js';
 
 export async function onRequestGet(context) {
   const { env, request } = context;
@@ -27,12 +28,12 @@ export async function onRequestGet(context) {
     scope: 'email,public_profile',
     response_type: 'code',
   });
-  return new Response(null, {
-    status: 302,
-    headers: {
-      Location: `https://www.facebook.com/v19.0/dialog/oauth?${params}`,
-      'Set-Cookie': stateCookie(state),
-      'Cache-Control': 'no-store',
-    },
+  const next = nextFromRequest(request);
+  const headers = new Headers({
+    Location: `https://www.facebook.com/v19.0/dialog/oauth?${params}`,
+    'Cache-Control': 'no-store',
   });
+  headers.append('Set-Cookie', stateCookie(state));
+  headers.append('Set-Cookie', next ? nextCookie(next) : nextCookie('', true));
+  return new Response(null, { status: 302, headers });
 }

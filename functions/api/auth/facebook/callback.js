@@ -7,6 +7,7 @@ import {
   upsertOAuthUser,
   json,
 } from '../../../_lib/auth.js';
+import { nextCookie, nextFromCookies, oauthFail } from '../../../_lib/oauth-next.js';
 
 export async function onRequestGet(context) {
   const { env, request } = context;
@@ -29,13 +30,12 @@ export async function onRequestGet(context) {
   const state = url.searchParams.get('state');
   const origin = originOf(request);
   const clearState = stateCookie('', true);
+  const clearNext = nextCookie('', true);
   const cookies = parseCookies(request);
+  const next = nextFromCookies(cookies);
 
   if (!code || !state || cookies[STATE_COOKIE] !== state) {
-    return new Response(null, {
-      status: 302,
-      headers: { Location: `${origin}/account/?error=state`, 'Set-Cookie': clearState },
-    });
+    return oauthFail(origin, 'state', [clearState, clearNext]);
   }
 
   const redirectUri = `${origin}/api/auth/facebook/callback`;
@@ -46,10 +46,7 @@ export async function onRequestGet(context) {
   tokenUrl.searchParams.set('code', code);
   const tokenRes = await fetch(tokenUrl);
   if (!tokenRes.ok) {
-    return new Response(null, {
-      status: 302,
-      headers: { Location: `${origin}/account/?error=token`, 'Set-Cookie': clearState },
-    });
+    return oauthFail(origin, 'token', [clearState, clearNext]);
   }
   const tokens = await tokenRes.json();
   const meUrl = new URL('https://graph.facebook.com/v19.0/me');
@@ -57,17 +54,11 @@ export async function onRequestGet(context) {
   meUrl.searchParams.set('access_token', tokens.access_token);
   const meRes = await fetch(meUrl);
   if (!meRes.ok) {
-    return new Response(null, {
-      status: 302,
-      headers: { Location: `${origin}/account/?error=userinfo`, 'Set-Cookie': clearState },
-    });
+    return oauthFail(origin, 'userinfo', [clearState, clearNext]);
   }
   const me = await meRes.json();
   if (!me.id || !me.email) {
-    return new Response(null, {
-      status: 302,
-      headers: { Location: `${origin}/account/?error=email`, 'Set-Cookie': clearState },
-    });
+    return oauthFail(origin, 'email', [clearState, clearNext]);
   }
 
   const picture = me.picture && me.picture.data ? me.picture.data.url : null;
@@ -81,10 +72,11 @@ export async function onRequestGet(context) {
   const sessionCookieValue = await createCentralSessionCookie(userId, env, request);
 
   const headers = new Headers({
-    Location: `${origin}/account/`,
+    Location: next || `${origin}/account/`,
     'Cache-Control': 'no-store',
   });
   headers.append('Set-Cookie', sessionCookieValue);
   headers.append('Set-Cookie', clearState);
+  headers.append('Set-Cookie', clearNext);
   return new Response(null, { status: 302, headers });
 }

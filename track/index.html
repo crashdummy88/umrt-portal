@@ -6,16 +6,6 @@
   <meta name="robots" content="noindex,follow">
   <link rel="stylesheet" href="/assets/styles.css">
   <link rel="stylesheet" href="/design/platform-bar.css">
-  <style>
-    .job-card{border:1px solid #e2e2e2;border-radius:8px;padding:16px;margin-bottom:12px}
-    .job-status{display:inline-block;font-size:.75em;font-weight:700;text-transform:uppercase;padding:3px 10px;border-radius:999px;background:#F5F5F5;color:#1A1A1A}
-    .job-status.requested{background:#EFE3C0;color:#7A5A00}
-    .job-status.scheduled{background:#CFE8FF;color:#0A4A8A}
-    .job-status.in_progress{background:#D8E8D2;color:#2C6B1F}
-    .job-status.completed{background:#DCF5E0;color:#1B7A34}
-    .job-status.cancelled{background:#F3D6D6;color:#8A1F1F}
-    .muted{color:#666}
-  </style>
 </head>
 <body>
   <div class="umrt-platform-bar" role="navigation" aria-label="UMRT properties">
@@ -42,13 +32,13 @@
     <main>
       <h1>Track service</h1>
       <div id="signed-out" hidden>
-        <p class="lede">Sign in to see your service requests.</p>
+        <p class="lede">Sign in to see jobs and invoices on file for your email. Booking still happens on Square.</p>
         <a class="btn" href="/account/">Sign in</a>
       </div>
       <div id="signed-in" hidden>
-        <p class="lede">Jobs tied to your account email.</p>
+        <p class="lede">Jobs tied to your account email. Status is what we have on file — Book on Square for a new visit.</p>
         <div id="job-list"></div>
-        <p id="empty-note" class="muted" hidden>No service requests on file yet for this email. <a href="/book/">Request one</a>, or if you've already submitted the form, Text Now and we'll confirm.</p>
+        <p id="empty-note" class="muted" hidden>No jobs on file for this email yet. <a href="https://united-mobile-rv-llc.square.site/">Book on Square</a> to request a visit. If you already booked, Text Now and we'll confirm — deposits are collected after confirmation, not from a public pay link.</p>
       </div>
       <div id="loading"><p class="muted">Loading…</p></div>
       <p style="margin-top:2rem"><a class="btn btn-ghost" href="sms:+16166065277">Text Now</a> <a class="btn" href="https://united-mobile-rv-llc.square.site/">Book</a></p>
@@ -65,7 +55,19 @@
   (function () {
     function esc(s) { return String(s || '').replace(/[&<>"']/g, function (c) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
     function statusLabel(s) {
-      return { requested: 'Requested', scheduled: 'Scheduled', in_progress: 'In progress', completed: 'Completed', cancelled: 'Cancelled' }[s] || s;
+      return { requested: 'Requested', scheduled: 'Scheduled', in_progress: 'In progress', completed: 'Completed', cancelled: 'Cancelled' }[s] || s || 'On file';
+    }
+    function money(cents) {
+      return '$' + (Number(cents || 0) / 100).toFixed(2);
+    }
+    function isSafeInvoiceUrl(raw) {
+      try {
+        var u = new URL(String(raw || ''));
+        var host = u.hostname.toLowerCase();
+        if (u.protocol !== 'https:') return false;
+        return host === 'squareup.com' || host.slice(-13) === '.squareup.com'
+          || host === 'squareupsandbox.com' || host.slice(-20) === '.squareupsandbox.com';
+      } catch (e) { return false; }
     }
     fetch('/api/auth/me', { credentials: 'include' })
       .then(function (r) { return r.status === 200 ? r.json() : null; })
@@ -88,12 +90,28 @@
             list.innerHTML = jobs.map(function (j) {
               var rig = [j.rv_year, j.rv_make, j.rv_model].filter(Boolean).join(' ');
               var where = [j.city, j.state].filter(Boolean).join(', ');
+              var invoice = j.invoice || {};
+              var invoiceLabel = invoice.label || '';
+              var invoiceUrl = isSafeInvoiceUrl(invoice.url) ? invoice.url : '';
+              var paidAmt = invoice.paid && invoice.amount_cents != null
+                ? ' · ' + money(invoice.amount_cents) : '';
+              var invoicePill = invoiceLabel
+                ? '<span class="invoice-status' + (invoice.paid ? ' paid' : '') + '">' + esc(invoiceLabel) + esc(paidAmt) + '</span>'
+                : '';
+              var invoiceBtn = invoiceUrl
+                ? '<a class="btn btn-ghost" href="' + esc(invoiceUrl) + '" target="_blank" rel="noopener">Open invoice</a>'
+                : '';
               return '<div class="job-card">' +
-                '<span class="job-status ' + esc(j.status) + '">' + esc(statusLabel(j.status)) + '</span>' +
-                '<h3 style="margin:.5rem 0 0">' + (rig ? esc(rig) : 'Service request') + '</h3>' +
+                '<span class="job-status ' + esc(j.status) + '">' + esc(j.status_label || statusLabel(j.status)) + '</span>' +
+                invoicePill +
+                '<h3>' + (rig ? esc(rig) : 'Service request') + '</h3>' +
                 '<p class="muted" style="margin:.25rem 0">' + esc(j.issue) + '</p>' +
                 (where ? '<p class="muted" style="margin:0;font-size:.85em">' + esc(where) + '</p>' : '') +
-                '<p class="muted" style="margin:.25rem 0 0;font-size:.8em">Submitted ' + esc(String(j.created_at).slice(0, 10)) + '</p>' +
+                '<p class="muted" style="margin:.25rem 0 0;font-size:.8em">Submitted ' + esc(String(j.created_at || '').slice(0, 10)) + '</p>' +
+                '<div class="job-actions">' +
+                  '<a class="btn" href="https://united-mobile-rv-llc.square.site/" target="_blank" rel="noopener">Book</a>' +
+                  invoiceBtn +
+                '</div>' +
               '</div>';
             }).join('');
           });
