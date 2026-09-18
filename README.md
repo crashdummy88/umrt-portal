@@ -11,9 +11,11 @@ GitHub → Cloudflare `umrt-portal.pages.dev`. Domain HOLD — pages.dev only. P
 - `SESSION_SECRET`
 - Optional: `FACEBOOK_APP_ID`, `FACEBOOK_APP_SECRET`
 
-D1 binding name: `DB`. Migration: `migrations/0001_init.sql`.
+D1 binding name: `DB`. Migrations: `migrations/0001_init.sql` … `0008_square_events.sql`.
 
 Redirect URI: `https://umrt-portal.pages.dev/api/auth/google/callback`
+
+Square → Matt + Claude: `POST /api/webhooks/square` writes `square_events`; admin/Claude read `GET /api/admin/events`. See `SQUARE_EVENTS.md`.
 
 See `CF_PAGES.md` for Pages + D1 setup.
 
