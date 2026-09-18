@@ -1,10 +1,11 @@
 /**
- * Header + mobile convert stack must match Matt's 2026-09-16 lock:
+ * Header + mobile convert stack must match Matt's convert lock:
  *   Call (616) 606-5277 → tel:+16166065277
  *   Text Now (gold)     → sms:+16166065277
  *   Book                → https://united-mobile-rv-llc.square.site/
  *
  * OAuth start hrefs on /account/ must stay untouched.
+ * Dead square.link pay URLs must not ship.
  */
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -68,6 +69,27 @@ for (const page of CUSTOMER_PAGES) {
     assert.match(mobile, />Book</);
   });
 }
+
+test('home Book service uses the in-portal /book/ hub; convert Book stays Square', () => {
+  const html = read('index.html');
+  assert.match(html, /class="portal-card" href="\/book\/"/);
+  assert.match(html, /<strong>Book service<\/strong>/);
+  assert.match(html, /href="https:\/\/united-mobile-rv-llc\.square\.site\/"/);
+});
+
+test('book hub points customers to Square booking (not a dead pay link)', () => {
+  const html = read('book/index.html');
+  assert.match(html, /<a class="btn" href="https:\/\/united-mobile-rv-llc\.square\.site\/" target="_blank" rel="noopener">Book<\/a>/);
+  assert.equal(html.includes('square.link'), false);
+});
+
+test('customer pages do not ship the dead square.link pay URL', () => {
+  for (const page of CUSTOMER_PAGES) {
+    const html = read(page);
+    assert.equal(html.includes('square.link'), false, `${page} has dead square.link`);
+    assert.equal(html.includes('Pay deposit'), false, `${page} still advertises a public pay card`);
+  }
+});
 
 test('account OAuth start hrefs are unchanged', () => {
   const html = read('account/index.html');

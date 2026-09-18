@@ -1,6 +1,8 @@
 /**
  * GET /api/admin/jobs — full job list for the owner dashboard, plus revenue
  * stats. Admin-only (isAdminUser). Supports ?status=xxx filter.
+ * Square invoice columns are stored values only — live events come from
+ * umrt-square-events (Cloudflare). This handler does not poll Square.
  */
 import { getSessionUser, isAdminUser, json } from '../../../_lib/auth.js';
 
@@ -19,7 +21,8 @@ export async function onRequestGet(context) {
 
   let query = `SELECT id, full_name, phone, email, rv_year, rv_make, rv_model, vin, issue,
       street, city, state, zip, preferred_date, preferred_time, status, source,
-      notes, admin_notes, final_amount_cents, payment_method, paid_at, created_at, updated_at
+      notes, admin_notes, final_amount_cents, payment_method, paid_at, created_at, updated_at,
+      square_order_id, square_invoice_id, square_invoice_url, square_invoice_status
     FROM jobs`;
   const binds = [];
   if (statusFilter) {

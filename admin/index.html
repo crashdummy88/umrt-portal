@@ -53,6 +53,7 @@
     <div class="eyebrow">Owner dashboard</div>
     <h1>Jobs &amp; revenue</h1>
     <p class="lede">Every booking that's come through the site, in one place. Update status and record what a job actually paid — this is the real ledger.</p>
+    <p class="note">Square booking land is <a href="https://united-mobile-rv-llc.square.site/">united-mobile-rv-llc.square.site</a>. Invoice/payment events will arrive via the umrt-square-events webhook (Cloudflare). This dashboard does not poll Square or invent a live sync.</p>
 
     <div id="loading"><p class="muted">Checking access…</p></div>
 
@@ -188,6 +189,11 @@
             '<p class="meta">' + esc(j.issue) + '</p>' +
             '<p class="contact">' + esc(j.phone) + (j.email ? ' · ' + esc(j.email) : '') + (where ? ' · ' + esc(where) : '') + '</p>' +
             '<p class="meta">Submitted ' + esc(fmtDate(j.created_at)) + (j.source ? ' via ' + esc(j.source) : '') + '</p>' +
+            (j.square_invoice_status || j.square_invoice_id
+              ? '<p class="meta">Square invoice: ' + esc(j.square_invoice_status || 'on file') +
+                (j.square_invoice_url ? ' · <a href="' + esc(j.square_invoice_url) + '" target="_blank" rel="noopener">open in Square</a>' : '') +
+                '</p>'
+              : '<p class="meta">No Square invoice on this row yet.</p>') +
           '</div>' +
         '</div>' +
         '<details><summary>Edit / update job ▾</summary>' + jobEditForm(j) + '</details>';
