@@ -15,13 +15,15 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '../..');
 const BOOK = 'https://united-mobile-rv-llc.square.site/';
 const HUB = 'https://unitedmobilerv.com/';
 const FORUM = 'https://forum.unitedmobilerv.com/';
-const GUIDES = 'https://unitedmobilerv.com/guide/';
 
 const CUSTOMER_PAGES = [
   'index.html',
   'account/index.html',
   'book/index.html',
   'track/index.html',
+  'community/index.html',
+  'directory/index.html',
+  'directory/apply.html',
 ];
 
 function read(rel) {
@@ -79,7 +81,6 @@ test('customer pages: no pages.dev, no square.link, convert lock dests present',
     assert.ok(html.includes(BOOK), `${page} missing Square book`);
     assert.ok(html.includes(HUB), `${page} missing Main Hub`);
     assert.ok(html.includes(FORUM), `${page} missing Forum`);
-    assert.doesNotMatch(html, /href="\/guide\/"/, `${page} used relative /guide/`);
   }
 });
 
@@ -98,11 +99,24 @@ test('jobs API does not expose a fake sync flag', () => {
   assert.doesNotMatch(src, /synced:\s*true|live_sync:\s*true/);
 });
 
-test('Guides dest, if present, is the mothership /guide/ URL', () => {
+test('portal chrome has no Field Guides / WP /guide/ button', () => {
   for (const page of CUSTOMER_PAGES) {
     const html = read(page);
-    if (html.includes('Guides') || html.includes('/guide/')) {
-      assert.ok(html.includes(GUIDES), `${page} Guides must be ${GUIDES}`);
+    const bar = html.match(/<div class="umrt-platform-bar"[\s\S]*?<\/div>\s*<\/div>/);
+    const header = html.match(/<header[\s>][\s\S]*?<\/header>/);
+    const footer = html.match(/<footer[\s>][\s\S]*?<\/footer>/);
+    const mobile = html.match(/<div class="mobile-bar"[\s\S]*?<\/div>/);
+    for (const [name, block] of [
+      ['platform bar', bar && bar[0]],
+      ['header', header && header[0]],
+      ['footer', footer && footer[0]],
+      ['mobile bar', mobile && mobile[0]],
+    ]) {
+      assert.ok(block, `${page} missing ${name}`);
+      assert.doesNotMatch(block, /unitedmobilerv\.com\/guide\//, `${page} ${name} has WP /guide/`);
+      assert.doesNotMatch(block, /href="\/guide\/"/, `${page} ${name} has relative /guide/`);
+      assert.doesNotMatch(block, />Field Guides</, `${page} ${name} has Field Guides`);
+      assert.doesNotMatch(block, />Guides</, `${page} ${name} has Guides`);
     }
   }
 });
