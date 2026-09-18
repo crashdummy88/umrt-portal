@@ -31,18 +31,17 @@ Set these **names** (production + preview as needed). Never commit values.
 
 Without Twilio/Resend, notify is **stubbed** (`notify_status=stubbed`). The event is still stored.
 
-## Square webhooks
+## Square webhooks (Worker, not Pages)
 
-1. Apply `migrations/0008_square_events.sql` to the D1 bound as `DB`.
-2. Square Developer Console → Webhooks → Add subscription.
-3. Notification URL: `https://umrt-portal.pages.dev/api/webhooks/square` (or the custom portal host once attached). Must match `SQUARE_WEBHOOK_NOTIFICATION_URL`.
-4. Subscribe to booking, invoice, payment, refund, and order events.
-5. Copy the subscription **signature key** into Pages secret `SQUARE_WEBHOOK_SIGNATURE_KEY`.
-6. Send a test event from the Dashboard; confirm a row on `/admin/` and `GET /api/admin/events`.
+Canonical ingest is Worker `umrt-square-events` on account `662952da5de37843cb132fd1e79a9cb7`. Staging URL Matt pastes into Square **Sandbox**:
 
-Claude/ADMIN read: signed-in admin session, or `Authorization: Bearer $CLAUDE_EVENTS_TOKEN`.
+```
+https://umrt-square-events-staging.mattc2896.workers.dev/webhook
+```
 
-See `SQUARE_EVENTS.md` for the sample payload and test plan.
+Do not enable a production Square subscription without Matt. Do not point production Square at `umrt-portal.pages.dev`. Schema + event list: `workers/umrt-square-events/README.md`.
+
+Portal `/api/admin/events` is the later consumer. Book land stays `https://united-mobile-rv-llc.square.site/`.
 
 ## Google OAuth redirect URI
 

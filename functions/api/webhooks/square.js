@@ -2,10 +2,10 @@
  * POST /api/webhooks/square — Square → portal D1 event path.
  * GET  /api/webhooks/square — health (no secrets).
  *
- * Configure the Square Developer Dashboard webhook subscription URL to
- * this path (production: https://umrt-portal.pages.dev/api/webhooks/square).
- * Set SQUARE_WEBHOOK_SIGNATURE_KEY (and ideally SQUARE_WEBHOOK_NOTIFICATION_URL)
- * in Cloudflare Pages env. Unsigned requests are rejected.
+ * Optional later ingest. Canonical Square Dashboard target is Worker
+ * `umrt-square-events` (workers/umrt-square-events) on mattc2896.workers.dev.
+ * Do not enable a production Square subscription on this Pages path.
+ * Unsigned requests are rejected when SQUARE_WEBHOOK_SIGNATURE_KEY is set.
  */
 import { json } from '../../_lib/auth.js';
 import { checkRateLimit } from '../../_lib/rate-limit.js';

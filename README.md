@@ -15,7 +15,7 @@ D1 binding name: `DB`. Migrations: `migrations/0001_init.sql` … `0008_square_e
 
 Redirect URI: `https://umrt-portal.pages.dev/api/auth/google/callback`
 
-Square → Matt + Claude: `POST /api/webhooks/square` writes `square_events`; admin/Claude read `GET /api/admin/events`. See `SQUARE_EVENTS.md`.
+Square → Matt + Claude: dedicated Worker `umrt-square-events` (`workers/umrt-square-events/`, `*.mattc2896.workers.dev`). Portal consumes that D1 log later. See `workers/umrt-square-events/README.md` and `SQUARE_EVENTS.md`. Book land stays `https://united-mobile-rv-llc.square.site/`.
 
 See `CF_PAGES.md` for Pages + D1 setup.
 

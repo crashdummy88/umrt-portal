@@ -2,19 +2,23 @@
 
 Portal owns jobs/account. Integration chain: docs ↔ portal → Square → Matt + Claude.
 
+**Canonical webhook Worker:** `umrt-square-events` on account `662952da5de37843cb132fd1e79a9cb7` (`Mattc2896.workers.dev`). See [`workers/umrt-square-events/README.md`](workers/umrt-square-events/README.md) for the D1 schema and the exact Square Dashboard paste list.
+
 ```
-Square Dashboard webhook
-  POST /api/webhooks/square
+Square Dashboard (staging / sandbox first — not production until Matt)
+  POST https://umrt-square-events-staging.mattc2896.workers.dev/webhook
     → verify HMAC
-    → insert square_events (D1)
-    → best-effort match jobs + reflect invoice/payment status
-    → notify Matt (SMS/email if provider env is set; otherwise stub)
-Claude / ADMIN
-  GET /api/admin/events
-  GET /api/admin/events/:id
+    → insert square_events (Worker D1)
+    → notify Matt (stub unless Twilio/Resend secrets)
+Claude
+  GET https://umrt-square-events-staging.mattc2896.workers.dev/events
+Portal (later)
+  consumes GET /events — /api/admin/events is the future portal reader
 ```
 
-Shop (`united-mobile-rv`) still creates draft Square orders/invoices via `_lib/square.js`. This repo does **not** call Square write APIs and does not change shop UI.
+Shop (`united-mobile-rv`) still creates draft Square orders/invoices via `_lib/square.js`. This repo does **not** call Square write APIs, does **not** invent catalog IDs, and does **not** change Book land (`https://united-mobile-rv-llc.square.site/`).
+
+Portal `/api/webhooks/square` remains as an optional later ingest; **do not** point a production Square subscription at Pages.
 
 ## Endpoints
 
@@ -31,22 +35,39 @@ UI: `/admin/` (existing owner dashboard) shows a Square events list under jobs. 
 
 ## Configure Square Dashboard
 
-1. Apply migration `migrations/0008_square_events.sql` to D1 `umrt-portal-db` (binding `DB`).
-2. [Square Developer Console](https://developer.squareup.com/apps) → your app → **Webhooks** → Add subscription.
-3. **Notification URL** (no trailing slash):
+**Paste this — Sandbox + staging Worker only. Do not enable production until Matt.**
 
-   ```
-   https://umrt-portal.pages.dev/api/webhooks/square
-   ```
+Notification URL:
 
-   Preview/staging: use the Pages preview origin + the same path. The URL in Square must equal `SQUARE_WEBHOOK_NOTIFICATION_URL` (or the request URL if that env is unset).
-4. Event types: `booking.*`, `invoice.*`, `payment.*`, `refund.*`, `order.created`, `order.updated`.
-5. Copy the subscription **signature key** into Cloudflare Pages → Environment variables:
+```
+https://umrt-square-events-staging.mattc2896.workers.dev/webhook
+```
 
-   - `SQUARE_WEBHOOK_SIGNATURE_KEY`
-   - `SQUARE_WEBHOOK_NOTIFICATION_URL` = the exact URL from step 3
+Events:
 
-   Do not invent a key. Sandbox and production subscriptions have different keys.
+```
+booking.created
+booking.updated
+invoice.created
+invoice.published
+invoice.updated
+invoice.deleted
+invoice.canceled
+invoice.scheduled
+invoice.payment_made
+invoice.refunded
+invoice.scheduled_charge_failed
+payment.created
+payment.updated
+refund.created
+refund.updated
+order.created
+order.updated
+```
+
+Then `wrangler secret put SQUARE_WEBHOOK_SIGNATURE_KEY --env staging` and `SQUARE_WEBHOOK_NOTIFICATION_URL` (exact URL above). Do not invent a key.
+
+Production Worker URL (do not subscribe yet): `https://umrt-square-events.mattc2896.workers.dev/webhook`.
 
 ## How Claude / ADMIN reads events
 
