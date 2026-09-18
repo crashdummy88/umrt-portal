@@ -3,16 +3,18 @@
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Tech & Vendor Directory · UMRT Portal</title>
-  <meta name="description" content="RV techs and vendors United Mobile RV works with or refers overflow to.">
+  <meta name="robots" content="noindex,follow">
+  <meta name="description" content="United Mobile RV tech and vendor directory. Coming online — no placeholder listings.">
   <link rel="stylesheet" href="/assets/styles.css">
+  <link rel="icon" href="/assets/brand/favicon-64.png" sizes="64x64">
   <link rel="stylesheet" href="/design/platform-bar.css">
   <style>
-    .vendor-card{border:1px solid #e2e2e2;border-radius:8px;padding:16px;margin-bottom:12px}
-    .vendor-cat{display:inline-block;font-size:.75em;font-weight:700;text-transform:uppercase;padding:3px 10px;border-radius:999px;background:#F5F5F5;color:#1A1A1A;margin-bottom:6px}
-    .muted{color:#666}
-    .tabs{display:flex;gap:8px;margin-bottom:16px}
-    .tabs a{padding:6px 14px;border:1px solid #e2e2e2;border-radius:999px;text-decoration:none;color:#1A1A1A}
-    .tabs a[aria-current="page"]{background:#1A1A1A;color:#fff;border-color:#1A1A1A}
+    .vendor-card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.1rem 1.15rem;margin-bottom:12px}
+    .vendor-cat{display:inline-block;font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;padding:.25rem .55rem;border-radius:999px;background:rgba(201,151,44,.16);color:var(--gold);margin-bottom:6px}
+    .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+    .tabs a{padding:6px 14px;border:1px solid var(--line);border-radius:999px;text-decoration:none;color:var(--white)}
+    .tabs a[aria-current="page"]{background:var(--gold);color:var(--black);border-color:var(--gold)}
+    .action-row{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:1rem}
   </style>
 </head>
 <body>
@@ -29,8 +31,16 @@
   </div>
   <div class="wrap">
     <header>
-      <a class="brand" href="/">United Mobile <span>RV</span></a>
-      <nav aria-label="Portal navigation"><a href="/">Home</a><a href="/book/">Request</a><a href="/track/">Track</a><a href="/directory/" aria-current="page">Directory</a><a href="https://shop.unitedmobilerv.com/">Shop</a><a href="/account/">Account</a></nav>
+      <a class="brand" href="/" aria-label="United Mobile RV Portal home"><img src="/assets/brand/umrt-logo.webp" width="54" height="42" alt="United Mobile RV" decoding="async"/></a>
+      <nav aria-label="Portal navigation">
+        <a href="/">Home</a>
+        <a href="/book/">Request</a>
+        <a href="/track/">Track</a>
+        <a href="/directory/" aria-current="page">Directory</a>
+        <a href="https://shop.unitedmobilerv.com/">Shop</a>
+        <a href="/account/">Account</a>
+        <a href="/community/">Community</a>
+      </nav>
       <div class="nav-cta" aria-label="Contact">
         <a class="btn btn-ghost" href="tel:+16166065277">Call (616) 606-5277</a>
         <a class="btn btn-gold" href="sms:+16166065277">Text Now</a>
@@ -38,16 +48,33 @@
       </div>
     </header>
     <main>
+      <div class="eyebrow">Directory</div>
       <h1>Tech &amp; vendor directory</h1>
-      <p class="lede">RV techs and vendors we work with or refer overflow jobs to. Listed businesses pay a $40/year membership -- <a href="/directory/apply.html">apply to be listed</a>.</p>
-      <div class="tabs">
-        <a href="?category=" id="tab-all">All</a>
-        <a href="?category=tech" id="tab-tech">Techs</a>
-        <a href="?category=vendor" id="tab-vendor">Vendors</a>
+      <p class="lede">Approved listings will show here when they are live. We are not inventing placeholder techs or shops.</p>
+
+      <div id="coming-online" class="card">
+        <div class="eyebrow">Coming online</div>
+        <h2 class="h2">No vendors listed yet</h2>
+        <p>This is not an empty search. The directory is not live. Book United Mobile RV on Square, ask on the Forum, or shop parts in the meantime.</p>
+        <div class="action-row">
+          <a class="btn" href="https://united-mobile-rv-llc.square.site/">Book</a>
+          <a class="btn btn-ghost" href="https://forum.unitedmobilerv.com/">Forum</a>
+          <a class="btn btn-ghost" href="https://shop.unitedmobilerv.com/">Shop</a>
+          <a class="btn btn-ghost" href="https://unitedmobilerv.com/">Main Hub</a>
+        </div>
+        <p class="note" style="margin-top:1rem">Tech or vendor? <a href="/directory/apply.html">Apply to be listed</a> — applications are reviewed by hand before anything goes live.</p>
       </div>
-      <div id="list"></div>
-      <p id="empty-note" class="muted" hidden>No listings yet in this category.</p>
-      <p id="loading" class="muted">Loading&hellip;</p>
+
+      <div id="listings" hidden>
+        <div class="tabs">
+          <a href="?category=" id="tab-all">All</a>
+          <a href="?category=tech" id="tab-tech">Techs</a>
+          <a href="?category=vendor" id="tab-vendor">Vendors</a>
+        </div>
+        <div id="list"></div>
+        <p id="empty-note" class="note" hidden>No approved listings in this category yet. <a href="https://united-mobile-rv-llc.square.site/">Book</a> United Mobile RV, or ask on the <a href="https://forum.unitedmobilerv.com/">Forum</a>.</p>
+      </div>
+      <p id="loading" class="note">Checking for approved listings…</p>
     </main>
     <footer>United Mobile RV LLC · <a href="tel:+16166065277">(616) 606-5277</a> · <a href="sms:+16166065277">Text Now</a> · <a href="https://united-mobile-rv-llc.square.site/">Book</a> · <a href="https://unitedmobilerv.com/">Main Hub</a> · <a href="https://forum.unitedmobilerv.com/">Forum</a> · <a href="https://software.unitedmobilerv.com/">Software</a> · <a href="https://status.unitedmobilerv.com/">Status</a> · <a href="https://shop.unitedmobilerv.com/">Shop</a> · <a href="https://docs.unitedmobilerv.com/">Docs</a></footer>
   </div>
@@ -59,8 +86,6 @@
   <script>
     var params = new URLSearchParams(location.search);
     var category = params.get('category') || '';
-    document.getElementById(category === 'tech' ? 'tab-tech' : category === 'vendor' ? 'tab-vendor' : 'tab-all')
-      .setAttribute('aria-current', 'page');
 
     function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
     // Fixed 2026-09-15: esc() HTML-escapes but never blocked a javascript:/
@@ -74,12 +99,30 @@
       catch (e) { return false; }
     }
 
-    fetch('/api/vendors' + (category ? '?category=' + encodeURIComponent(category) : ''))
+    function showComingOnline(){
+      document.getElementById('coming-online').hidden = false;
+      document.getElementById('listings').hidden = true;
+    }
+
+    function showListings(){
+      document.getElementById('coming-online').hidden = true;
+      document.getElementById('listings').hidden = false;
+      document.getElementById(category === 'tech' ? 'tab-tech' : category === 'vendor' ? 'tab-vendor' : 'tab-all')
+        .setAttribute('aria-current', 'page');
+    }
+
+    fetch('/api/vendors')
       .then(function(r){ return r.json(); })
       .then(function(data){
         document.getElementById('loading').hidden = true;
+        var all = data.vendors || [];
+        if (!all.length) {
+          showComingOnline();
+          return;
+        }
+        showListings();
+        var vendors = category ? all.filter(function(v){ return v.category === category; }) : all;
         var list = document.getElementById('list');
-        var vendors = data.vendors || [];
         if (!vendors.length) {
           document.getElementById('empty-note').hidden = false;
           return;
@@ -88,15 +131,16 @@
           return '<div class="vendor-card">' +
             '<span class="vendor-cat">' + esc(v.category) + '</span>' +
             '<h3>' + esc(v.business_name) + '</h3>' +
-            (v.trade_focus ? '<p class="muted">' + esc(v.trade_focus) + '</p>' : '') +
+            (v.trade_focus ? '<p class="note">' + esc(v.trade_focus) + '</p>' : '') +
             (v.description ? '<p>' + esc(v.description) + '</p>' : '') +
-            (v.service_area ? '<p class="muted">Serves: ' + esc(v.service_area) + '</p>' : '') +
+            (v.service_area ? '<p class="note">Serves: ' + esc(v.service_area) + '</p>' : '') +
             (v.website && isSafeHttpUrl(v.website) ? '<p><a href="' + esc(v.website) + '" rel="noopener noreferrer" target="_blank">' + esc(v.website) + '</a></p>' : '') +
             '</div>';
         }).join('');
       })
       .catch(function(){
-        document.getElementById('loading').textContent = 'Could not load the directory right now.';
+        document.getElementById('loading').hidden = true;
+        showComingOnline();
       });
   </script>
 </body>
